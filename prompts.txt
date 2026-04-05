@@ -1,0 +1,31 @@
+做一个对话的web chatbot应用的framework templetes。要求如下：
+1. 项目根目录要包含：后端代码目录、前端代码目录、文档目录，
+2. application 目录下是后端代码的目录，是python项目
+2.1 要求使用fastapi作为webserver服务，要求使用pandantic实体类进行强类型约束
+2.2 后端项目要求使用fastapi，目录包括controller/libaray/conf，requirements.txt 文件, 应用启动main.py 文件
+2.3 application/controller 目录下子目录是分类，里面是controller和vo文件，
+2.4 application/libaray 目录中存放各种逻辑代码
+2.5.1 application/libaray/base 目录用于存放基础的依赖服务、apikit的封装等等
+2.5.2 application/libaray/domain 目录用于存放领域驱动层，分为：command/phrase/step三层
+2.5.3 application/libaray/models 目录放orm映射层，使用sqlalchemy框架
+2.5.3 application/libaray/managers 目录放orm映射层，
+2.5.4 application/libaray/services 目录放业务逻辑代码
+2.6 代码调用关系如下
+2.6.1 controller 文件只能调用services层的逻辑
+2.6.2 services 层 则根据各类逻辑组装相应的功能拼接成结果
+2.6.3 services 层如果遇到复杂逻辑，需要拆分到domain层，只能调用command层的逻辑
+2.6.4 command层负责命令入口，表达业务逻辑,command层只能调用phrase 层的接口
+2.6.5 phrase 层则负责拼接原子动作，组成相应的业务逻辑，只能调用step的接口
+2.6.6 step 层负责拼接各种工具组成原子逻辑
+2.7 application/config 目录下放各种配置文件, 要求使用pydantic_settings 作为配置管理框架，并且支持env文件配置
+3. 前端项目在application-web 目录下，使用react框架
+4. 文档目录在docs下，
+4.1 文档目录在 docs目录中，包括规划、开发手册、使用手册、运维手册、FAQ部分、quick start 文档
+5. 其他要求
+5.1 后端代码添加错误处理机制，前端代码也要做相应的处理
+5.2 在CLAUDE.md中标注清楚：每次改动代码都要改相应的文档
+5.3 创建README.md，里面包括项目简单说明和快速开始的命令
+5.4 在CLAUDE.md中说明要求项目是中文
+5.5 要创建gitignore文件，包括前后端的内容
+
+
