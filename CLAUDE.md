@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Language
+
+本项目使用中文。所有文档、注释、commit message、PR 描述、代码中的用户可见文本均使用中文。变量名、函数名、类名等代码标识符使用英文。
+
 ## Project Overview
 
 Full-stack chatbot framework template: Python/FastAPI backend (`application/`) + React/Vite frontend (`application-web/`).

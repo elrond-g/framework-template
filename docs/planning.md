@@ -1,41 +1,41 @@
-# Project Planning
+# 项目规划
 
-## Overview
+## 概述
 
-A conversational chatbot web application framework providing a structured full-stack template with a Python/FastAPI backend and React frontend.
+一个对话式聊天机器人 Web 应用框架，提供结构化的全栈项目模板，包含 Python/FastAPI 后端和 React 前端。
 
-## Architecture
+## 架构
 
-### Call Hierarchy
+### 调用层级
 
 ```
 Controller → Service → Command → Phrase → Step
-                    ↘ Manager (data access)
+                    ↘ Manager（数据访问）
 ```
 
-| Layer      | Responsibility                     | Can Call          |
-|------------|-----------------------------------|-------------------|
-| Controller | HTTP interface, request validation | Service only      |
-| Service    | Business orchestration            | Manager, Command  |
-| Command    | Business command entry             | Phrase only       |
-| Phrase     | Compose atomic operations          | Step only         |
-| Step       | Single atomic operation            | External APIs/tools |
-| Manager    | Data access (CRUD)                | ORM models        |
+| 层级 | 职责 | 可调用 |
+|------|------|--------|
+| Controller | HTTP 接口、请求校验 | 仅 Service |
+| Service | 业务编排 | Manager、Command |
+| Command | 业务命令入口 | 仅 Phrase |
+| Phrase | 组合原子操作 | 仅 Step |
+| Step | 单个原子操作 | 外部 API / 工具 |
+| Manager | 数据访问（CRUD） | ORM 模型 |
 
-### Tech Stack
+### 技术栈
 
-| Component | Technology             |
-|-----------|----------------------|
-| Backend   | Python, FastAPI, Pydantic, SQLAlchemy |
-| Frontend  | React, Vite           |
-| Config    | pydantic-settings + .env |
-| Database  | SQLite (default), any SQLAlchemy-supported DB |
+| 组件 | 技术 |
+|------|------|
+| 后端 | Python, FastAPI, Pydantic, SQLAlchemy |
+| 前端 | React, Vite |
+| 配置 | pydantic-settings + .env |
+| 数据库 | SQLite（默认），支持所有 SQLAlchemy 兼容数据库 |
 
-## Milestones
+## 里程碑
 
-- [ ] Phase 1: Core framework template
-- [ ] Phase 2: Streaming response support (SSE)
-- [ ] Phase 3: User authentication
-- [ ] Phase 4: Multi-model LLM support
-- [ ] Phase 5: Plugin / tool-use system
-- [ ] Phase 6: Production deployment (Docker, CI/CD)
+- [ ] 阶段 1：核心框架模板
+- [ ] 阶段 2：流式响应支持（SSE）
+- [ ] 阶段 3：用户认证
+- [ ] 阶段 4：多模型 LLM 支持
+- [ ] 阶段 5：插件 / 工具调用系统
+- [ ] 阶段 6：生产部署（Docker、CI/CD）

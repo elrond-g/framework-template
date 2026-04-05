@@ -1,41 +1,41 @@
-# User Guide
+# 使用手册
 
-## Getting Started
+## 快速开始
 
-1. Open your browser and navigate to `http://localhost:5173`
-2. Click **"+ New Chat"** in the sidebar to create a conversation
-3. Type your message in the input box and press **Enter** (or click **Send**)
-4. The assistant will reply. Continue the conversation as needed.
+1. 打开浏览器，访问 `http://localhost:5173`
+2. 点击左侧栏 **"+ New Chat"** 创建新会话
+3. 在输入框中输入消息，按 **Enter** 发送（或点击 **Send** 按钮）
+4. 等待 AI 回复，继续对话即可
 
-## Features
+## 功能说明
 
-### Conversations
-- Create multiple conversations from the sidebar
-- Switch between conversations by clicking on them
-- Delete a conversation with the **x** button
+### 会话管理
+- 从左侧栏创建多个会话
+- 点击会话名称切换会话
+- 点击 **x** 按钮删除会话
 
-### Chat
-- Type messages and receive AI responses
-- Message history is preserved per conversation
-- Press **Shift+Enter** for a new line in your message
+### 聊天
+- 输入消息并接收 AI 回复
+- 每个会话的消息历史独立保存
+- 按 **Shift+Enter** 在消息中换行
 
-## API Endpoints
+## API 接口
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST   | `/api/chat/conversations` | Create a new conversation |
-| GET    | `/api/chat/conversations` | List all conversations |
-| GET    | `/api/chat/conversations/{id}/messages` | Get conversation messages |
-| POST   | `/api/chat/conversations/{id}/chat` | Send a message and get reply |
-| DELETE | `/api/chat/conversations/{id}` | Delete a conversation |
-| GET    | `/api/system/health` | Health check |
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/chat/conversations` | 创建新会话 |
+| GET | `/api/chat/conversations` | 获取会话列表 |
+| GET | `/api/chat/conversations/{id}/messages` | 获取会话消息记录 |
+| POST | `/api/chat/conversations/{id}/chat` | 发送消息并获取回复 |
+| DELETE | `/api/chat/conversations/{id}` | 删除会话 |
+| GET | `/api/system/health` | 健康检查 |
 
-## Configuration
+## 配置说明
 
-Edit the `.env` file in the `application/` directory to configure:
+编辑 `application/.env` 文件进行配置：
 
-- `LLM_API_KEY` — Your LLM provider API key
-- `LLM_MODEL` — Model to use (default: gpt-4)
-- `DATABASE_URL` — Database connection string
+- `LLM_API_KEY` — LLM 提供商的 API Key
+- `LLM_MODEL` — 使用的模型（默认：gpt-4）
+- `DATABASE_URL` — 数据库连接字符串
 
-Without an API key, the system returns mock responses for testing.
+未配置 API Key 时，系统会返回 Mock 响应，方便测试。

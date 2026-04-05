@@ -1,42 +1,42 @@
-# FAQ
+# 常见问题
 
-## General
+## 综合
 
-**Q: What is this project?**
-A: A full-stack chatbot framework template with a FastAPI backend and React frontend, designed as a starting point for building conversational AI applications.
+**问：这个项目是什么？**
+答：一个全栈聊天机器人框架模板，包含 FastAPI 后端和 React 前端，作为构建对话式 AI 应用的起点。
 
-**Q: What LLM providers are supported?**
-A: Any OpenAI-compatible API. Set `LLM_API_BASE_URL` and `LLM_API_KEY` in `.env`. Works with OpenAI, Azure OpenAI, local models via vLLM/Ollama, etc.
+**问：支持哪些 LLM 提供商？**
+答：支持任何 OpenAI 兼容的 API。在 `.env` 中设置 `LLM_API_BASE_URL` 和 `LLM_API_KEY` 即可。兼容 OpenAI、Azure OpenAI、通过 vLLM/Ollama 部署的本地模型等。
 
-## Backend
+## 后端
 
-**Q: How do I add a new API endpoint?**
-A: Create a new controller directory under `application/controller/`, add VO and controller files, then register the router in `main.py`.
+**问：如何新增 API 接口？**
+答：在 `application/controller/` 下创建新的控制器目录，添加 VO 和控制器文件，然后在 `main.py` 中注册路由。
 
-**Q: How do I switch from SQLite to PostgreSQL?**
-A: Update `DATABASE_URL` in `.env` to a PostgreSQL connection string (e.g., `postgresql://user:pass@localhost:5432/dbname`) and install `psycopg2-binary`.
+**问：如何从 SQLite 切换到 PostgreSQL？**
+答：在 `.env` 中将 `DATABASE_URL` 修改为 PostgreSQL 连接字符串（例如 `postgresql://user:pass@localhost:5432/dbname`），并安装 `psycopg2-binary`。
 
-**Q: What is the domain layer (command/phrase/step)?**
-A: A layered pattern for complex business logic:
-- **Command**: business intent entry point
-- **Phrase**: composes multiple atomic steps
-- **Step**: single atomic operation (e.g., one LLM call)
+**问：领域层（command/phrase/step）是什么？**
+答：一种用于处理复杂业务逻辑的分层模式：
+- **Command**：业务意图入口
+- **Phrase**：组合多个原子步骤
+- **Step**：单个原子操作（例如一次 LLM 调用）
 
-**Q: Why mock responses?**
-A: When `LLM_API_KEY` is empty, the system returns mock responses so you can develop and test the UI without an API key.
+**问：为什么会返回 Mock 响应？**
+答：当 `LLM_API_KEY` 为空时，系统返回 Mock 响应，便于在没有 API Key 的情况下开发和测试 UI。
 
-## Frontend
+## 前端
 
-**Q: How do I change the frontend port?**
-A: Edit `server.port` in `application-web/vite.config.js`.
+**问：如何修改前端端口？**
+答：编辑 `application-web/vite.config.js` 中的 `server.port`。
 
-**Q: How does API proxying work?**
-A: Vite proxies `/api/*` requests to `http://localhost:8000` during development. In production, configure your reverse proxy (nginx) to route API requests to the backend.
+**问：API 代理是如何工作的？**
+答：开发环境下，Vite 将 `/api/*` 请求代理到 `http://localhost:8000`。生产环境需要配置反向代理（如 nginx）将 API 请求转发到后端。
 
-## Troubleshooting
+## 故障排查
 
-**Q: Backend won't start — ModuleNotFoundError**
-A: Make sure you're running from the `application/` directory and have installed dependencies with `pip install -r requirements.txt`.
+**问：后端无法启动，报 ModuleNotFoundError**
+答：确认在 `application/` 目录下运行，并且已通过 `pip install -r requirements.txt` 安装依赖。
 
-**Q: Frontend can't reach the API**
-A: Ensure the backend is running on port 8000. Check the Vite proxy config in `vite.config.js`.
+**问：前端无法连接 API**
+答：确认后端正在 8000 端口运行，检查 `vite.config.js` 中的代理配置。
