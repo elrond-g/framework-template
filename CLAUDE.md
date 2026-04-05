@@ -6,6 +6,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 本项目使用中文。所有文档、注释、commit message、PR 描述、代码中的用户可见文本均使用中文。变量名、函数名、类名等代码标识符使用英文。
 
+## Documentation Sync
+
+每次改动代码必须同步更新相关文档。涉及的文档包括但不限于：
+- `README.md` — 项目说明、快速开始命令
+- `docs/development-guide.md` — 开发手册（项目结构、层级规则、新增功能流程）
+- `docs/user-guide.md` — 使用手册（功能说明、API 接口列表）
+- `docs/operations-guide.md` — 运维手册（部署、配置、安全清单）
+- `docs/quick-start.md` — 快速开始
+- `docs/faq.md` — 常见问题
+
+新增接口需更新 API 列表，修改配置项需更新 `.env.example` 和相关文档，变更架构需更新规划文档和开发手册。不允许代码已改但文档未同步的情况。
+
 ## Project Overview
 
 Full-stack chatbot framework template: Python/FastAPI backend (`application/`) + React/Vite frontend (`application-web/`).
