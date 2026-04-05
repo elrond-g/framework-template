@@ -108,3 +108,28 @@ body {
   margin-bottom: 8px;
   font-weight: 500;
 }
+
+/* Error bar */
+.error-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #5c1a1a;
+  color: #f5a5a5;
+  font-size: 13px;
+  border-bottom: 1px solid #7a2020;
+}
+
+.error-bar button {
+  background: none;
+  border: none;
+  color: #f5a5a5;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+}
+
+.error-bar button:hover {
+  color: white;
+}

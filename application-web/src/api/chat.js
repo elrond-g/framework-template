@@ -1,11 +1,31 @@
 const BASE = "/api/chat";
 
 async function request(url, options = {}) {
-  const res = await fetch(url, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
-  return res.json();
+  try {
+    const res = await fetch(url, {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    });
+
+    if (!res.ok) {
+      // 尝试解析服务端错误响应
+      try {
+        const body = await res.json();
+        return {
+          code: body.code || res.status,
+          message: body.message || `请求失败 (${res.status})`,
+          data: null,
+        };
+      } catch {
+        return { code: res.status, message: `请求失败 (${res.status})`, data: null };
+      }
+    }
+
+    return await res.json();
+  } catch (err) {
+    // 网络错误、DNS 解析失败、连接拒绝等
+    return { code: -1, message: "网络连接失败，请检查网络后重试", data: null };
+  }
 }
 
 export function createConversation(title = "New Conversation") {

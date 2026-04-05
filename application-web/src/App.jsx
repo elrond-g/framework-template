@@ -10,10 +10,15 @@ import "./App.css";
 function App() {
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(null);
+  const [error, setError] = useState(null);
 
   const loadConversations = async () => {
     const res = await listConversations();
-    if (res.code === 0) setConversations(res.data || []);
+    if (res.code === 0) {
+      setConversations(res.data || []);
+    } else {
+      setError(res.message);
+    }
   };
 
   useEffect(() => {
@@ -25,11 +30,16 @@ function App() {
     if (res.code === 0) {
       setActiveId(res.data.id);
       loadConversations();
+    } else {
+      setError(res.message);
     }
   };
 
   const handleDelete = async (id) => {
-    await deleteConversation(id);
+    const res = await deleteConversation(id);
+    if (res.code !== 0) {
+      setError(res.message);
+    }
     if (activeId === id) setActiveId(null);
     loadConversations();
   };
@@ -62,6 +72,12 @@ function App() {
         </ul>
       </aside>
       <main className="main">
+        {error && (
+          <div className="error-bar">
+            <span>{error}</span>
+            <button onClick={() => setError(null)}>x</button>
+          </div>
+        )}
         {activeId ? (
           <ChatWindow conversationId={activeId} />
         ) : (

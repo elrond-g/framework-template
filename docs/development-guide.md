@@ -82,6 +82,48 @@ application/
 - `code: 0` = 成功
 - `code: 非零` = 失败（message 字段说明错误原因）
 
+## 错误处理规范
+
+### 后端
+
+项目使用分层错误处理机制，异常沿调用链向上传播，由全局异常处理器统一返回。
+
+**异常类型**（定义在 `library/base/exceptions.py`）：
+
+| 异常类 | 用途 | HTTP 状态码 |
+|--------|------|------------|
+| `AppException` | 基础业务异常 | 400 |
+| `NotFoundException` | 资源不存在 | 404 |
+| `ValidationException` | 参数校验失败 | 422 |
+| `LLMException` | LLM 服务调用失败 | 502 |
+| `DatabaseException` | 数据库操作失败 | 500 |
+
+**各层职责**：
+
+- **Step 层**：捕获外部调用异常（httpx 超时、连接失败、HTTP 错误、响应解析错误），转为 `LLMException` 抛出
+- **Manager 层**：捕获 `SQLAlchemyError`，失败时执行 `db.rollback()`，转为 `DatabaseException` 抛出
+- **Service 层**：捕获 `LLMException`，处理半成品状态（如用户消息已保存但 LLM 失败），然后继续抛出
+- **Controller 层**：不做 try-catch，依赖全局异常处理器
+- **全局异常处理器**：捕获所有 `AppException` 子类，按异常 code 映射 HTTP 状态码并返回统一格式
+
+**日志**：
+
+使用 `library/base/logger.py` 提供的统一 logger。各层在捕获异常时记录日志：
+
+```python
+from library.base.logger import logger
+
+logger.error("描述: %s", str(exc))
+logger.warning("业务警告: %s", message)
+logger.info("操作记录: %s", detail)
+```
+
+### 前端
+
+- **API 客户端**（`src/api/chat.js`）：统一捕获网络错误和 HTTP 错误，返回 `{code, message, data}` 格式，组件无需 try-catch
+- **组件**：检查 `res.code === 0` 判断成功，失败时设置 `error` 状态展示提示
+- **错误展示**：顶部错误提示条（App 级别）+ 聊天窗口内错误消息气泡（`role="error"`）
+
 ## 环境变量
 
 参见 `.env.example` 获取所有支持的配置项。所有配置通过 `pydantic-settings` 管理，可通过环境变量或 `.env` 文件覆盖。

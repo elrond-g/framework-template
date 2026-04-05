@@ -33,6 +33,17 @@
 **问：API 代理是如何工作的？**
 答：开发环境下，Vite 将 `/api/*` 请求代理到 `http://localhost:8000`。生产环境需要配置反向代理（如 nginx）将 API 请求转发到后端。
 
+## 错误处理
+
+**问：后端异常类型有哪些？**
+答：`AppException`（基础）、`NotFoundException`（404）、`ValidationException`（422）、`LLMException`（502）、`DatabaseException`（500）。详见开发手册中的错误处理规范。
+
+**问：前端如何展示错误？**
+答：API 客户端统一捕获错误并返回 `{code, message, data}` 格式。组件通过判断 `code !== 0` 展示错误提示条或错误消息气泡。
+
+**问：LLM 调用失败时会发生什么？**
+答：Step 层捕获 httpx 异常并抛出 `LLMException`。Service 层捕获后保存一条错误提示消息到会话中，然后继续抛出异常。前端会在聊天窗口中显示红色错误气泡。
+
 ## 故障排查
 
 **问：后端无法启动，报 ModuleNotFoundError**

@@ -109,3 +109,22 @@
   color: #e0e0e0;
   border-bottom-left-radius: 4px;
 }
+
+.message-bubble.error {
+  margin-right: auto;
+  background: #5c1a1a;
+  color: #f5a5a5;
+  border: 1px solid #7a2020;
+  border-bottom-left-radius: 4px;
+}
+
+/* Chat error tip */
+.chat-error-tip {
+  text-align: center;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  background: #5c1a1a;
+  color: #f5a5a5;
+  border-radius: 8px;
+  font-size: 13px;
+}

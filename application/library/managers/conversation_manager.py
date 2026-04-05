@@ -1,5 +1,8 @@
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from library.base.exceptions import DatabaseException
+from library.base.logger import logger
 from library.models.conversation import Conversation, Message
 
 
@@ -7,31 +10,48 @@ class ConversationManager:
     def __init__(self, db: Session):
         self.db = db
 
+    def _commit(self) -> None:
+        """提交事务，失败时回滚并抛出 DatabaseException。"""
+        try:
+            self.db.commit()
+        except SQLAlchemyError as exc:
+            self.db.rollback()
+            logger.error("数据库提交失败: %s", str(exc))
+            raise DatabaseException("数据库写入失败，请稍后重试")
+
     def create_conversation(self, title: str = "New Conversation") -> Conversation:
         conversation = Conversation(title=title)
         self.db.add(conversation)
-        self.db.commit()
+        self._commit()
         self.db.refresh(conversation)
         return conversation
 
     def get_conversation(self, conversation_id: str) -> Conversation | None:
-        return self.db.query(Conversation).filter(
-            Conversation.id == conversation_id
-        ).first()
+        try:
+            return self.db.query(Conversation).filter(
+                Conversation.id == conversation_id
+            ).first()
+        except SQLAlchemyError as exc:
+            logger.error("查询会话失败: %s", str(exc))
+            raise DatabaseException("数据库查询失败")
 
     def list_conversations(self) -> list[Conversation]:
-        return (
-            self.db.query(Conversation)
-            .order_by(Conversation.updated_at.desc())
-            .all()
-        )
+        try:
+            return (
+                self.db.query(Conversation)
+                .order_by(Conversation.updated_at.desc())
+                .all()
+            )
+        except SQLAlchemyError as exc:
+            logger.error("查询会话列表失败: %s", str(exc))
+            raise DatabaseException("数据库查询失败")
 
     def delete_conversation(self, conversation_id: str) -> bool:
         conversation = self.get_conversation(conversation_id)
         if not conversation:
             return False
         self.db.delete(conversation)
-        self.db.commit()
+        self._commit()
         return True
 
     def add_message(
@@ -41,14 +61,18 @@ class ConversationManager:
             conversation_id=conversation_id, role=role, content=content
         )
         self.db.add(message)
-        self.db.commit()
+        self._commit()
         self.db.refresh(message)
         return message
 
     def get_messages(self, conversation_id: str) -> list[Message]:
-        return (
-            self.db.query(Message)
-            .filter(Message.conversation_id == conversation_id)
-            .order_by(Message.created_at.asc())
-            .all()
-        )
+        try:
+            return (
+                self.db.query(Message)
+                .filter(Message.conversation_id == conversation_id)
+                .order_by(Message.created_at.asc())
+                .all()
+            )
+        except SQLAlchemyError as exc:
+            logger.error("查询消息列表失败: %s", str(exc))
+            raise DatabaseException("数据库查询失败")
