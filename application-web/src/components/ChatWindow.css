@@ -39,49 +39,149 @@
   padding: 16px 24px;
   border-top: 1px solid #0f3460;
   background: #16213e;
+  overflow-y: auto;
+  max-height: 50vh;
 }
 
-.message-input-form {
+/* Bazi form */
+.bazi-form {
   display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.message-input-form textarea {
-  flex: 1;
-  padding: 12px 16px;
+.bazi-form-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bazi-label {
+  min-width: 70px;
+  font-size: 13px;
+  color: #aaa;
+  flex-shrink: 0;
+}
+
+.bazi-datetime {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.bazi-datetime input {
+  width: 56px;
+  padding: 8px;
   background: #1a1a2e;
   color: #e0e0e0;
   border: 1px solid #0f3460;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+.bazi-datetime input::-webkit-outer-spin-button,
+.bazi-datetime input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.bazi-datetime span {
+  font-size: 13px;
+  color: #888;
+}
+
+.bazi-form-row select,
+.bazi-form-row > input[type="text"] {
+  flex: 1;
+  padding: 8px 12px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  font-size: 13px;
   font-family: inherit;
-  resize: none;
-  min-height: 44px;
-  max-height: 120px;
 }
 
-.message-input-form textarea:focus {
-  outline: none;
+.bazi-form-row select option {
+  background: #1a1a2e;
+  color: #e0e0e0;
+}
+
+.bazi-directions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.bazi-dir-btn {
+  padding: 6px 14px;
+  background: #1a1a2e;
+  color: #aaa;
+  border: 1px solid #0f3460;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+
+.bazi-dir-btn:hover {
   border-color: #533483;
+  color: #e0e0e0;
 }
 
-.message-input-form button {
-  padding: 12px 24px;
+.bazi-dir-btn.active {
+  background: #533483;
+  border-color: #533483;
+  color: white;
+}
+
+.bazi-dir-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bazi-custom-dir {
+  width: 100px;
+  padding: 6px 10px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.bazi-submit {
+  width: 100%;
+  padding: 10px;
   background: #533483;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
+  margin-top: 4px;
 }
 
-.message-input-form button:hover {
+.bazi-submit:hover {
   background: #7b2cbf;
 }
 
-.message-input-form button:disabled {
+.bazi-submit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.bazi-form input:focus,
+.bazi-form select:focus,
+.bazi-custom-dir:focus {
+  outline: none;
+  border-color: #533483;
 }
 
 /* Message bubbles */

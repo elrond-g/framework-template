@@ -24,4 +24,5 @@ application-web/node_modules/
 application-web/dist/
 
 # Logs
+application/logs/
 *.log

@@ -56,7 +56,22 @@ alembic upgrade head
 
 ## 日志
 
-在 `main.py` 中按需配置 Python logging。生产环境建议将 stdout 输出接入日志聚合服务。
+日志同时输出到控制台和 `application/logs/` 目录下的文件：
+
+| 文件 | 内容 | 级别 |
+|------|------|------|
+| `logs/app.log` | 全量日志 | DEBUG（debug 模式）/ INFO（生产） |
+| `logs/error.log` | 仅错误日志 | ERROR |
+
+日志文件使用 RotatingFileHandler 自动轮转，相关配置项：
+
+```env
+LOG_DIR=logs              # 日志目录（相对于 application/）
+LOG_MAX_BYTES=10485760    # 单文件最大 10MB
+LOG_BACKUP_COUNT=5        # 保留 5 个历史文件
+```
+
+生产环境可将 `logs/` 目录挂载到持久化存储，或将 stdout 接入日志聚合服务。
 
 ## 安全清单
 

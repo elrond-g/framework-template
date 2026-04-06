@@ -1,14 +1,16 @@
-"""Phrase layer: compose atomic steps into business logic fragments.
+"""Phrase 层：组合原子步骤为业务逻辑片段。
 
-ChatPhrase builds the message payload and calls LLMStep.
-Phrase only calls Step — never Command or Service.
+ChatPhrase 构建消息列表并调用 LLMStep。
+Phrase 只调用 Step，不调用 Command 或 Service。
 """
 
 from library.domain.step.llm_step import LLMStep
 
+SYSTEM_PROMPT = "你是一位精通八字的大师。"
+
 
 class ChatPhrase:
-    """Compose steps to produce an LLM-based chat reply."""
+    """组合 step 生成基于 LLM 的聊天回复。"""
 
     def __init__(self):
         self.llm_step = LLMStep()
@@ -17,9 +19,9 @@ class ChatPhrase:
         self,
         history: list[dict],
         user_message: str,
-        system_prompt: str = "You are a helpful assistant.",
+        system_prompt: str = SYSTEM_PROMPT,
     ) -> str:
-        """Build the full message list and invoke the LLM step."""
+        """构建完整消息列表并调用 LLM step。"""
         messages: list[dict] = [{"role": "system", "content": system_prompt}]
         messages.extend(history)
         messages.append({"role": "user", "content": user_message})
