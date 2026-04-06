@@ -118,6 +118,22 @@ logger.warning("业务警告: %s", message)
 logger.info("操作记录: %s", detail)
 ```
 
+**LLM 专用日志**：
+
+`library/base/llm_logger.py` 提供 LLM 调用的专用日志，输出到 `logs/` 目录下两个独立文件：
+
+| 文件 | 格式 | 用途 |
+|------|------|------|
+| `llm-digest.log` | 管道符分隔文本 | 摘要：打印时间、request_id、开始/结束时间、输入输出长度、TTFT、TOPT、成功/失败、失败原因 |
+| `llm-describe.log` | JSONL（每行一个 JSON） | 详情：包含完整请求 messages 和返回内容，用于提示词调试 |
+
+每次 `LLMStep.call_llm()` 调用（含 Mock 响应）都会自动写入这两个日志。字段说明：
+
+- `request_id` — 8 位 UUID 短标识，用于关联同一请求的两条日志
+- `ttft_ms` — Time To First Token（毫秒，非流式请求 = 总耗时）
+- `topt` — 输出吞吐量（chars/s = 输出字符数 / 总耗时秒）
+- `error_reason` — 失败原因（成功时为空）
+
 ### 前端
 
 - **API 客户端**（`src/api/chat.js`）：统一捕获网络错误和 HTTP 错误，返回 `{code, message, data}` 格式，组件无需 try-catch
