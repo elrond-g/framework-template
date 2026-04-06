@@ -53,7 +53,7 @@ function MessageInput({ onSend, disabled }) {
       `你是一位精通八字的大师，帮我算一下出生于${year}年${month}月${day}日 ${hour}:${minute}的${gender}性，` +
       `出生地是${birthplace}，帮我算一下我的${directionText}。`;
 
-    onSend(prompt);
+    onSend(prompt, { year, month, day, hour, minute, gender, birthplace, directions: allDirections });
     setForm(INITIAL_FORM);
   };
 

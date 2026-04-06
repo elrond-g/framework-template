@@ -79,7 +79,7 @@ function App() {
           </div>
         )}
         {activeId ? (
-          <ChatWindow conversationId={activeId} />
+          <ChatWindow conversationId={activeId} onTitleUpdated={loadConversations} />
         ) : (
           <div className="empty-state">
             <h2>Welcome to Chatbot</h2>

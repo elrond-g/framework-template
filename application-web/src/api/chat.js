@@ -55,3 +55,10 @@ export function deleteConversation(conversationId) {
     method: "DELETE",
   });
 }
+
+export function updateConversation(conversationId, title) {
+  return request(`${BASE}/conversations/${conversationId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ title }),
+  });
+}

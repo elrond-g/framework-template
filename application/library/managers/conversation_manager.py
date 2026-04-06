@@ -46,6 +46,23 @@ class ConversationManager:
             logger.error("查询会话列表失败: %s", str(exc))
             raise DatabaseException("数据库查询失败")
 
+    def update_conversation_title(self, conversation_id: str, title: str) -> Conversation | None:
+        """更新会话标题，返回更新后的会话；会话不存在则返回 None。"""
+        conversation = self.get_conversation(conversation_id)
+        if not conversation:
+            return None
+        try:
+            conversation.title = title
+            self._commit()
+            self.db.refresh(conversation)
+            return conversation
+        except DatabaseException:
+            raise
+        except SQLAlchemyError as exc:
+            self.db.rollback()
+            logger.error("更新会话标题失败: %s", str(exc))
+            raise DatabaseException("数据库写入失败，请稍后重试")
+
     def delete_conversation(self, conversation_id: str) -> bool:
         conversation = self.get_conversation(conversation_id)
         if not conversation:

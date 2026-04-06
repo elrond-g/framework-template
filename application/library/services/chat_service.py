@@ -52,6 +52,18 @@ class ChatService:
             for m in messages
         ]
 
+    def update_conversation(self, conversation_id: str, title: str) -> dict:
+        """更新会话标题。"""
+        conversation = self.manager.update_conversation_title(conversation_id, title)
+        if not conversation:
+            raise NotFoundException(f"会话 {conversation_id} 不存在")
+        return {
+            "id": conversation.id,
+            "title": conversation.title,
+            "created_at": str(conversation.created_at),
+            "updated_at": str(conversation.updated_at),
+        }
+
     def delete_conversation(self, conversation_id: str) -> bool:
         if not self.manager.delete_conversation(conversation_id):
             raise NotFoundException(f"会话 {conversation_id} 不存在")

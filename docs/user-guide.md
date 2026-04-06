@@ -34,6 +34,7 @@
 |------|------|------|
 | POST | `/api/chat/conversations` | 创建新会话 |
 | GET | `/api/chat/conversations` | 获取会话列表 |
+| PATCH | `/api/chat/conversations/{id}` | 更新会话标题 |
 | GET | `/api/chat/conversations/{id}/messages` | 获取会话消息记录 |
 | POST | `/api/chat/conversations/{id}/chat` | 发送消息并获取回复 |
 | DELETE | `/api/chat/conversations/{id}` | 删除会话 |

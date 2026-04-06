@@ -12,6 +12,7 @@ from .chat_vo import (
     ConversationVO,
     CreateConversationRequest,
     MessageVO,
+    UpdateConversationRequest,
 )
 
 router = APIRouter(prefix="/api/chat", tags=["Chat"])
@@ -45,6 +46,16 @@ def get_messages(
     service: ChatService = Depends(_get_service),
 ):
     data = service.get_conversation_messages(conversation_id)
+    return ApiResponse.success(data=data)
+
+
+@router.patch("/conversations/{conversation_id}", response_model=ApiResponse[ConversationVO])
+def update_conversation(
+    conversation_id: str,
+    req: UpdateConversationRequest,
+    service: ChatService = Depends(_get_service),
+):
+    data = service.update_conversation(conversation_id, title=req.title)
     return ApiResponse.success(data=data)
 
 

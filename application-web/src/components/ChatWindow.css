@@ -228,3 +228,61 @@
   border-radius: 8px;
   font-size: 13px;
 }
+
+/* TextInput — 普通追问输入框 */
+.text-input-wrapper {
+  padding: 16px 24px;
+  border-top: 1px solid #0f3460;
+  background: #16213e;
+}
+
+.text-input-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.text-input {
+  flex: 1;
+  padding: 10px 14px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: none;
+  overflow-y: auto;
+  max-height: 150px;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: #533483;
+}
+
+.text-input::placeholder {
+  color: #666;
+}
+
+.text-send-btn {
+  padding: 10px 20px;
+  background: #533483;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.text-send-btn:hover {
+  background: #7b2cbf;
+}
+
+.text-send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
