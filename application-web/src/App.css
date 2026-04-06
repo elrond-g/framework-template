@@ -75,6 +75,19 @@ body {
   font-size: 13px;
 }
 
+.conv-title-input {
+  flex: 1;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid #533483;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  min-width: 0;
+}
+
 .delete-btn {
   background: none;
   border: none;

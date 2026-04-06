@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ChatWindow from "./components/ChatWindow";
 import {
   createConversation,
   listConversations,
   deleteConversation,
+  updateConversation,
 } from "./api/chat";
 import "./App.css";
 
@@ -11,6 +12,9 @@ function App() {
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [error, setError] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const editInputRef = useRef(null);
 
   const loadConversations = async () => {
     const res = await listConversations();
@@ -24,6 +28,13 @@ function App() {
   useEffect(() => {
     loadConversations();
   }, []);
+
+  useEffect(() => {
+    if (editingId && editInputRef.current) {
+      editInputRef.current.focus();
+      editInputRef.current.select();
+    }
+  }, [editingId]);
 
   const handleNew = async () => {
     const res = await createConversation();
@@ -44,6 +55,35 @@ function App() {
     loadConversations();
   };
 
+  const handleDoubleClick = (e, conv) => {
+    e.stopPropagation();
+    setEditingId(conv.id);
+    setEditingTitle(conv.title);
+  };
+
+  const handleRenameSubmit = async (id) => {
+    const trimmed = editingTitle.trim();
+    if (!trimmed) {
+      setEditingId(null);
+      return;
+    }
+    const res = await updateConversation(id, trimmed);
+    if (res.code !== 0) {
+      setError(res.message);
+    }
+    setEditingId(null);
+    loadConversations();
+  };
+
+  const handleRenameKeyDown = (e, id) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleRenameSubmit(id);
+    } else if (e.key === "Escape") {
+      setEditingId(null);
+    }
+  };
+
   return (
     <div className="app">
       <aside className="sidebar">
@@ -57,7 +97,24 @@ function App() {
               className={c.id === activeId ? "active" : ""}
               onClick={() => setActiveId(c.id)}
             >
-              <span className="conv-title">{c.title}</span>
+              {editingId === c.id ? (
+                <input
+                  ref={editInputRef}
+                  className="conv-title-input"
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onBlur={() => handleRenameSubmit(c.id)}
+                  onKeyDown={(e) => handleRenameKeyDown(e, c.id)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <span
+                  className="conv-title"
+                  onDoubleClick={(e) => handleDoubleClick(e, c)}
+                >
+                  {c.title}
+                </span>
+              )}
               <button
                 className="delete-btn"
                 onClick={(e) => {
