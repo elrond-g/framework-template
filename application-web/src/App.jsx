@@ -139,7 +139,7 @@ function App() {
           <ChatWindow conversationId={activeId} onTitleUpdated={loadConversations} />
         ) : (
           <div className="empty-state">
-            <h2>Welcome to Chatbot</h2>
+            <h2>Welcome to Fleeting</h2>
             <p>Create a new conversation to get started.</p>
           </div>
         )}

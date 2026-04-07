@@ -1,4 +1,4 @@
-# Chatbot Framework
+# Fleeting
 
 全栈对话式聊天机器人应用框架模板，基于 **FastAPI** 后端 + **React** 前端。
 

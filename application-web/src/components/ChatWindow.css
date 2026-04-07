@@ -21,7 +21,7 @@
 .typing-indicator span {
   width: 8px;
   height: 8px;
-  background: #533483;
+  background: #6c5ce7;
   border-radius: 50%;
   animation: bounce 1.4s infinite ease-in-out both;
 }
@@ -37,8 +37,8 @@
 /* Message input area */
 .message-input-wrapper {
   padding: 16px 24px;
-  border-top: 1px solid #0f3460;
-  background: #16213e;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: #141419;
   overflow-y: auto;
   max-height: 50vh;
 }
@@ -59,7 +59,7 @@
 .bazi-label {
   min-width: 70px;
   font-size: 13px;
-  color: #aaa;
+  color: #777;
   flex-shrink: 0;
 }
 
@@ -73,12 +73,13 @@
 .bazi-datetime input {
   width: 56px;
   padding: 8px;
-  background: #1a1a2e;
-  color: #e0e0e0;
-  border: 1px solid #0f3460;
-  border-radius: 6px;
+  background: #1c1c24;
+  color: #d4d4dc;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
   font-size: 13px;
   text-align: center;
+  transition: border-color 0.15s;
   -moz-appearance: textfield;
 }
 
@@ -90,24 +91,25 @@
 
 .bazi-datetime span {
   font-size: 13px;
-  color: #888;
+  color: #555;
 }
 
 .bazi-form-row select,
 .bazi-form-row > input[type="text"] {
   flex: 1;
   padding: 8px 12px;
-  background: #1a1a2e;
-  color: #e0e0e0;
-  border: 1px solid #0f3460;
-  border-radius: 6px;
+  background: #1c1c24;
+  color: #d4d4dc;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
   font-size: 13px;
   font-family: inherit;
+  transition: border-color 0.15s;
 }
 
 .bazi-form-row select option {
-  background: #1a1a2e;
-  color: #e0e0e0;
+  background: #1c1c24;
+  color: #d4d4dc;
 }
 
 .bazi-directions {
@@ -120,9 +122,9 @@
 
 .bazi-dir-btn {
   padding: 6px 14px;
-  background: #1a1a2e;
-  color: #aaa;
-  border: 1px solid #0f3460;
+  background: #1c1c24;
+  color: #888;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   cursor: pointer;
   font-size: 12px;
@@ -130,58 +132,67 @@
 }
 
 .bazi-dir-btn:hover {
-  border-color: #533483;
-  color: #e0e0e0;
+  border-color: rgba(108, 92, 231, 0.4);
+  color: #d4d4dc;
 }
 
 .bazi-dir-btn.active {
-  background: #533483;
-  border-color: #533483;
+  background: linear-gradient(135deg, #6c5ce7, #a855f7);
+  border-color: transparent;
   color: white;
 }
 
 .bazi-dir-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .bazi-custom-dir {
   width: 100px;
   padding: 6px 10px;
-  background: #1a1a2e;
-  color: #e0e0e0;
-  border: 1px solid #0f3460;
-  border-radius: 6px;
+  background: #1c1c24;
+  color: #d4d4dc;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
   font-size: 12px;
   font-family: inherit;
+  transition: border-color 0.15s;
 }
 
 .bazi-submit {
   width: 100%;
   padding: 10px;
-  background: #533483;
+  background: linear-gradient(135deg, #6c5ce7, #a855f7);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 500;
   margin-top: 4px;
+  transition: opacity 0.2s, transform 0.1s;
 }
 
 .bazi-submit:hover {
-  background: #7b2cbf;
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.bazi-submit:active {
+  transform: translateY(0);
 }
 
 .bazi-submit:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
 }
 
 .bazi-form input:focus,
 .bazi-form select:focus,
 .bazi-custom-dir:focus {
   outline: none;
-  border-color: #533483;
+  border-color: rgba(108, 92, 231, 0.5);
 }
 
 /* Message bubbles */
@@ -189,8 +200,8 @@
   max-width: 70%;
   padding: 12px 16px;
   margin-bottom: 12px;
-  border-radius: 12px;
-  line-height: 1.5;
+  border-radius: 14px;
+  line-height: 1.6;
   font-size: 14px;
   white-space: pre-wrap;
   word-break: break-word;
@@ -198,23 +209,24 @@
 
 .message-bubble.user {
   margin-left: auto;
-  background: #533483;
+  background: linear-gradient(135deg, #6c5ce7, #a855f7);
   color: white;
   border-bottom-right-radius: 4px;
 }
 
 .message-bubble.assistant {
   margin-right: auto;
-  background: #0f3460;
-  color: #e0e0e0;
+  background: #1c1c24;
+  color: #d4d4dc;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-bottom-left-radius: 4px;
 }
 
 .message-bubble.error {
   margin-right: auto;
-  background: #5c1a1a;
-  color: #f5a5a5;
-  border: 1px solid #7a2020;
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.2);
   border-bottom-left-radius: 4px;
 }
 
@@ -223,17 +235,17 @@
   text-align: center;
   padding: 10px 16px;
   margin-bottom: 12px;
-  background: #5c1a1a;
-  color: #f5a5a5;
-  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  border-radius: 10px;
   font-size: 13px;
 }
 
 /* TextInput — 普通追问输入框 */
 .text-input-wrapper {
   padding: 16px 24px;
-  border-top: 1px solid #0f3460;
-  background: #16213e;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: #141419;
 }
 
 .text-input-container {
@@ -245,44 +257,53 @@
 .text-input {
   flex: 1;
   padding: 10px 14px;
-  background: #1a1a2e;
-  color: #e0e0e0;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
+  background: #1c1c24;
+  color: #d4d4dc;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   font-size: 14px;
   font-family: inherit;
   line-height: 1.5;
   resize: none;
   overflow-y: auto;
   max-height: 150px;
+  transition: border-color 0.15s;
 }
 
 .text-input:focus {
   outline: none;
-  border-color: #533483;
+  border-color: rgba(108, 92, 231, 0.5);
 }
 
 .text-input::placeholder {
-  color: #666;
+  color: #555;
 }
 
 .text-send-btn {
   padding: 10px 20px;
-  background: #533483;
+  background: linear-gradient(135deg, #6c5ce7, #a855f7);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 500;
   white-space: nowrap;
   flex-shrink: 0;
+  transition: opacity 0.2s, transform 0.1s;
 }
 
 .text-send-btn:hover {
-  background: #7b2cbf;
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.text-send-btn:active {
+  transform: translateY(0);
 }
 
 .text-send-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
 }

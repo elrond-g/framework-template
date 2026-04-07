@@ -6,8 +6,8 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #1a1a2e;
-  color: #e0e0e0;
+  background: #0f0f14;
+  color: #d4d4dc;
   height: 100vh;
 }
 
@@ -23,27 +23,34 @@ body {
 /* Sidebar */
 .sidebar {
   width: 260px;
-  background: #16213e;
+  background: #141419;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #0f3460;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .new-chat-btn {
   width: 100%;
   padding: 12px;
-  background: #0f3460;
-  color: #e0e0e0;
-  border: 1px solid #533483;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #6c5ce7, #a855f7);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 500;
   margin-bottom: 16px;
+  transition: opacity 0.2s, transform 0.1s;
 }
 
 .new-chat-btn:hover {
-  background: #533483;
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.new-chat-btn:active {
+  transform: translateY(0);
 }
 
 .conversation-list {
@@ -57,14 +64,20 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 10px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+  transition: background 0.15s;
 }
 
-.conversation-list li:hover,
+.conversation-list li:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .conversation-list li.active {
-  background: #0f3460;
+  background: rgba(108, 92, 231, 0.15);
+  border-left: 3px solid #6c5ce7;
+  padding-left: 9px;
 }
 
 .conv-title {
@@ -73,14 +86,19 @@ body {
   white-space: nowrap;
   flex: 1;
   font-size: 13px;
+  color: #b0b0bc;
+}
+
+.conversation-list li.active .conv-title {
+  color: #d4d4dc;
 }
 
 .conv-title-input {
   flex: 1;
-  background: #1a1a2e;
-  color: #e0e0e0;
-  border: 1px solid #533483;
-  border-radius: 4px;
+  background: #1c1c24;
+  color: #d4d4dc;
+  border: 1px solid #6c5ce7;
+  border-radius: 6px;
   padding: 4px 8px;
   font-size: 13px;
   font-family: inherit;
@@ -91,14 +109,21 @@ body {
 .delete-btn {
   background: none;
   border: none;
-  color: #888;
+  color: #555;
   cursor: pointer;
   font-size: 14px;
   padding: 2px 6px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.conversation-list li:hover .delete-btn,
+.conversation-list li.active .delete-btn {
+  opacity: 1;
 }
 
 .delete-btn:hover {
-  color: #e74c3c;
+  color: #ef4444;
 }
 
 /* Main area */
@@ -106,6 +131,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  background: #0f0f14;
 }
 
 .empty-state {
@@ -114,12 +140,13 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #888;
+  color: #555;
 }
 
 .empty-state h2 {
   margin-bottom: 8px;
   font-weight: 500;
+  color: #777;
 }
 
 /* Error bar */
@@ -128,16 +155,16 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  background: #5c1a1a;
-  color: #f5a5a5;
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
   font-size: 13px;
-  border-bottom: 1px solid #7a2020;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .error-bar button {
   background: none;
   border: none;
-  color: #f5a5a5;
+  color: #fca5a5;
   cursor: pointer;
   font-size: 14px;
   padding: 2px 6px;

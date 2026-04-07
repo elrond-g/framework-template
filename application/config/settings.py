@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     )
 
     # Application
-    app_name: str = "Chatbot Framework"
+    app_name: str = "Fleeting"
     app_version: str = "0.1.0"
     debug: bool = False
 
