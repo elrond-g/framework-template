@@ -79,3 +79,15 @@ async def chat(
 ):
     data = await service.chat(conversation_id, req.message)
     return ApiResponse.success(data=data)
+
+
+@router.post(
+    "/conversations/{conversation_id}/retry",
+    response_model=ApiResponse[MessageVO],
+)
+async def retry(
+    conversation_id: str,
+    service: ChatService = Depends(_get_service),
+):
+    data = await service.retry(conversation_id)
+    return ApiResponse.success(data=data)

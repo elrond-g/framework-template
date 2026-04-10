@@ -110,3 +110,58 @@ class ChatService:
             "content": reply,
             "created_at": str(assistant_msg.created_at),
         }
+
+    async def retry(self, conversation_id: str) -> dict:
+        """重试最后一轮对话：删除上一条 assistant 回复，重新请求 LLM。"""
+        conversation = self.manager.get_conversation(conversation_id)
+        if not conversation:
+            raise NotFoundException(f"会话 {conversation_id} 不存在")
+
+        # 删除最后一条 assistant 消息
+        self.manager.delete_last_assistant_message(conversation_id)
+
+        # 获取当前消息列表，找到最后一条 user 消息
+        messages = self.manager.get_messages(conversation_id)
+        if not messages:
+            raise NotFoundException("会话中没有可重试的消息")
+
+        last_user_msg = None
+        for m in reversed(messages):
+            if m.role == "user":
+                last_user_msg = m
+                break
+        if not last_user_msg:
+            raise NotFoundException("会话中没有用户消息，无法重试")
+
+        # 构建历史消息（排除最后一条 user 消息）
+        history = [
+            {"role": m.role, "content": m.content}
+            for m in messages
+            if m.id != last_user_msg.id
+        ]
+
+        # 重新调用 LLM
+        try:
+            reply = await self.chat_command.execute(
+                history=history,
+                user_message=last_user_msg.content,
+            )
+        except LLMException as exc:
+            logger.warning("重试 LLM 调用失败，会话 %s: %s", conversation_id, exc.message)
+            error_reply = f"[系统提示] {exc.message}"
+            self.manager.add_message(
+                conversation_id, role="assistant", content=error_reply
+            )
+            raise
+
+        # 保存新的助手回复
+        assistant_msg = self.manager.add_message(
+            conversation_id, role="assistant", content=reply
+        )
+
+        return {
+            "id": assistant_msg.id,
+            "role": "assistant",
+            "content": reply,
+            "created_at": str(assistant_msg.created_at),
+        }

@@ -62,3 +62,9 @@ export function updateConversation(conversationId, title) {
     body: JSON.stringify({ title }),
   });
 }
+
+export function retryMessage(conversationId) {
+  return request(`${BASE}/conversations/${conversationId}/retry`, {
+    method: "POST",
+  });
+}

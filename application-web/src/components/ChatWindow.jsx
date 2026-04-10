@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { getMessages, sendMessage, updateConversation } from "../api/chat";
+import { getMessages, sendMessage, updateConversation, retryMessage } from "../api/chat";
 import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
 import TextInput from "./TextInput";
@@ -54,7 +54,6 @@ function ChatWindow({ conversationId, onTitleUpdated }) {
     if (res.code === 0 && res.data) {
       setMessages((prev) => [...prev, res.data]);
     } else {
-      // 显示错误消息气泡
       const errorMsg = {
         id: `error-${Date.now()}`,
         role: "error",
@@ -69,15 +68,61 @@ function ChatWindow({ conversationId, onTitleUpdated }) {
     await handleSend(text, null);
   };
 
+  // 重试最后一轮对话
+  const handleRetry = async () => {
+    // 移除最后一条 assistant/error 消息
+    setMessages((prev) => {
+      const copy = [...prev];
+      for (let i = copy.length - 1; i >= 0; i--) {
+        if (copy[i].role === "assistant" || copy[i].role === "error") {
+          copy.splice(i, 1);
+          break;
+        }
+      }
+      return copy;
+    });
+    setLoading(true);
+    setError(null);
+
+    const res = await retryMessage(conversationId);
+    setLoading(false);
+
+    if (res.code === 0 && res.data) {
+      setMessages((prev) => [...prev, res.data]);
+    } else {
+      const errorMsg = {
+        id: `error-${Date.now()}`,
+        role: "error",
+        content: res.message || "重试失败，请稍后再试",
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    }
+  };
+
   // 会话无消息时显示八字表单，有消息后显示普通输入框
   const isNewConversation = messages.length === 0;
+
+  // 找到最后一条 assistant/error 消息的 id，用于显示重试按钮
+  let lastRetryableId = null;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === "assistant" || messages[i].role === "error") {
+      lastRetryableId = messages[i].id;
+      break;
+    }
+  }
 
   return (
     <div className="chat-window">
       <div className="messages">
         {error && <div className="chat-error-tip">{error}</div>}
         {messages.map((msg) => (
-          <MessageBubble key={msg.id} role={msg.role} content={msg.content} />
+          <MessageBubble
+            key={msg.id}
+            role={msg.role}
+            content={msg.content}
+            showRetry={!loading && msg.id === lastRetryableId}
+            onRetry={handleRetry}
+          />
         ))}
         {loading && (
           <div className="typing-indicator">

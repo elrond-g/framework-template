@@ -34,6 +34,10 @@
 
 首次提交八字表单后，输入区域自动切换为普通文本输入框，可对测算结果进行追问。支持 **Enter** 发送、**Shift+Enter** 换行。
 
+### 重试回复
+
+对 AI 回复不满意或遇到错误时，可点击最后一条 AI 回复或错误消息下方的 **"重试"** 按钮，系统会删除上一条回复并重新请求 LLM 生成新的回复。
+
 ## API 接口
 
 | 方法 | 路径 | 说明 |
@@ -43,6 +47,7 @@
 | PATCH | `/api/chat/conversations/{id}` | 更新会话标题 |
 | GET | `/api/chat/conversations/{id}/messages` | 获取会话消息记录 |
 | POST | `/api/chat/conversations/{id}/chat` | 发送消息并获取回复 |
+| POST | `/api/chat/conversations/{id}/retry` | 重试最后一轮对话 |
 | DELETE | `/api/chat/conversations/{id}` | 删除会话 |
 | GET | `/api/system/health` | 健康检查 |
 

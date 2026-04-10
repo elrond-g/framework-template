@@ -93,3 +93,25 @@ class ConversationManager:
         except SQLAlchemyError as exc:
             logger.error("查询消息列表失败: %s", str(exc))
             raise DatabaseException("数据库查询失败")
+
+    def delete_last_assistant_message(self, conversation_id: str) -> bool:
+        """删除该会话最后一条 assistant 消息，返回是否成功删除。"""
+        try:
+            last_assistant = (
+                self.db.query(Message)
+                .filter(
+                    Message.conversation_id == conversation_id,
+                    Message.role == "assistant",
+                )
+                .order_by(Message.created_at.desc())
+                .first()
+            )
+        except SQLAlchemyError as exc:
+            logger.error("查询最后一条 assistant 消息失败: %s", str(exc))
+            raise DatabaseException("数据库查询失败")
+
+        if not last_assistant:
+            return False
+        self.db.delete(last_assistant)
+        self._commit()
+        return True
