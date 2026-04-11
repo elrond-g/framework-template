@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { getMessages, sendMessage, updateConversation, retryMessage } from "../api/chat";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { getMessages, updateConversation, sendMessageStream, retryMessageStream } from "../api/chat";
 import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
 import TextInput from "./TextInput";
@@ -10,6 +10,8 @@ function ChatWindow({ conversationId, onTitleUpdated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const bottomRef = useRef(null);
+  // 用 ref 跟踪流式拼接，避免闭包陈旧问题
+  const streamRef = useRef({ thinking: "", content: "" });
 
   const loadMessages = async () => {
     setError(null);
@@ -31,11 +33,37 @@ function ChatWindow({ conversationId, onTitleUpdated }) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // 更新正在流式生成的 assistant 消息
+  const updateStreamingMsg = useCallback(() => {
+    setMessages((prev) => {
+      const copy = [...prev];
+      const last = copy[copy.length - 1];
+      if (last && last._streaming) {
+        copy[copy.length - 1] = {
+          ...last,
+          thinking: streamRef.current.thinking,
+          content: streamRef.current.content,
+        };
+      }
+      return copy;
+    });
+  }, []);
+
   const handleSend = async (text, formData) => {
     const userMsg = { id: Date.now().toString(), role: "user", content: text };
-    setMessages((prev) => [...prev, userMsg]);
+
+    // 插入 user 消息 + 空的 streaming assistant 消息
+    const streamingMsg = {
+      id: `streaming-${Date.now()}`,
+      role: "assistant",
+      content: "",
+      thinking: "",
+      _streaming: true,
+    };
+    setMessages((prev) => [...prev, userMsg, streamingMsg]);
     setLoading(true);
     setError(null);
+    streamRef.current = { thinking: "", content: "" };
 
     // 首次发送消息时，使用八字表单信息更新会话标题
     if (formData && messages.length === 0) {
@@ -48,19 +76,55 @@ function ChatWindow({ conversationId, onTitleUpdated }) {
       }
     }
 
-    const res = await sendMessage(conversationId, text);
-    setLoading(false);
-
-    if (res.code === 0 && res.data) {
-      setMessages((prev) => [...prev, res.data]);
-    } else {
-      const errorMsg = {
-        id: `error-${Date.now()}`,
-        role: "error",
-        content: res.message || "发送失败，请重试",
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    }
+    await sendMessageStream(conversationId, text, {
+      onThinking: (chunk) => {
+        streamRef.current.thinking += chunk;
+        updateStreamingMsg();
+      },
+      onContent: (chunk) => {
+        streamRef.current.content += chunk;
+        updateStreamingMsg();
+      },
+      onDone: (data) => {
+        setMessages((prev) => {
+          const copy = [...prev];
+          const last = copy[copy.length - 1];
+          if (last && last._streaming) {
+            copy[copy.length - 1] = {
+              id: data.id,
+              role: "assistant",
+              content: streamRef.current.content,
+              thinking: data.thinking || streamRef.current.thinking,
+              created_at: data.created_at,
+            };
+          }
+          return copy;
+        });
+        setLoading(false);
+      },
+      onError: (msg) => {
+        setMessages((prev) => {
+          const copy = [...prev];
+          // 如果最后一条是 streaming 占位，替换为 error
+          const last = copy[copy.length - 1];
+          if (last && last._streaming) {
+            copy[copy.length - 1] = {
+              id: `error-${Date.now()}`,
+              role: "error",
+              content: msg || "发送失败，请重试",
+            };
+          } else {
+            copy.push({
+              id: `error-${Date.now()}`,
+              role: "error",
+              content: msg || "发送失败，请重试",
+            });
+          }
+          return copy;
+        });
+        setLoading(false);
+      },
+    });
   };
 
   // 普通追问：只发送文本消息，不传 formData
@@ -70,7 +134,14 @@ function ChatWindow({ conversationId, onTitleUpdated }) {
 
   // 重试最后一轮对话
   const handleRetry = async () => {
-    // 移除最后一条 assistant/error 消息
+    // 移除最后一条 assistant/error 消息，插入 streaming 占位
+    const streamingMsg = {
+      id: `streaming-${Date.now()}`,
+      role: "assistant",
+      content: "",
+      thinking: "",
+      _streaming: true,
+    };
     setMessages((prev) => {
       const copy = [...prev];
       for (let i = copy.length - 1; i >= 0; i--) {
@@ -79,24 +150,60 @@ function ChatWindow({ conversationId, onTitleUpdated }) {
           break;
         }
       }
-      return copy;
+      return [...copy, streamingMsg];
     });
     setLoading(true);
     setError(null);
+    streamRef.current = { thinking: "", content: "" };
 
-    const res = await retryMessage(conversationId);
-    setLoading(false);
-
-    if (res.code === 0 && res.data) {
-      setMessages((prev) => [...prev, res.data]);
-    } else {
-      const errorMsg = {
-        id: `error-${Date.now()}`,
-        role: "error",
-        content: res.message || "重试失败，请稍后再试",
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    }
+    await retryMessageStream(conversationId, {
+      onThinking: (chunk) => {
+        streamRef.current.thinking += chunk;
+        updateStreamingMsg();
+      },
+      onContent: (chunk) => {
+        streamRef.current.content += chunk;
+        updateStreamingMsg();
+      },
+      onDone: (data) => {
+        setMessages((prev) => {
+          const copy = [...prev];
+          const last = copy[copy.length - 1];
+          if (last && last._streaming) {
+            copy[copy.length - 1] = {
+              id: data.id,
+              role: "assistant",
+              content: streamRef.current.content,
+              thinking: data.thinking || streamRef.current.thinking,
+              created_at: data.created_at,
+            };
+          }
+          return copy;
+        });
+        setLoading(false);
+      },
+      onError: (msg) => {
+        setMessages((prev) => {
+          const copy = [...prev];
+          const last = copy[copy.length - 1];
+          if (last && last._streaming) {
+            copy[copy.length - 1] = {
+              id: `error-${Date.now()}`,
+              role: "error",
+              content: msg || "重试失败，请稍后再试",
+            };
+          } else {
+            copy.push({
+              id: `error-${Date.now()}`,
+              role: "error",
+              content: msg || "重试失败，请稍后再试",
+            });
+          }
+          return copy;
+        });
+        setLoading(false);
+      },
+    });
   };
 
   // 会话无消息时显示八字表单，有消息后显示普通输入框
@@ -105,8 +212,9 @@ function ChatWindow({ conversationId, onTitleUpdated }) {
   // 找到最后一条 assistant/error 消息的 id，用于显示重试按钮
   let lastRetryableId = null;
   for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i].role === "assistant" || messages[i].role === "error") {
-      lastRetryableId = messages[i].id;
+    const msg = messages[i];
+    if ((msg.role === "assistant" || msg.role === "error") && !msg._streaming) {
+      lastRetryableId = msg.id;
       break;
     }
   }
@@ -120,15 +228,11 @@ function ChatWindow({ conversationId, onTitleUpdated }) {
             key={msg.id}
             role={msg.role}
             content={msg.content}
+            thinking={msg.thinking}
             showRetry={!loading && msg.id === lastRetryableId}
             onRetry={handleRetry}
           />
         ))}
-        {loading && (
-          <div className="typing-indicator">
-            <span></span><span></span><span></span>
-          </div>
-        )}
         <div ref={bottomRef} />
       </div>
       {isNewConversation ? (

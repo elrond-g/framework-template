@@ -6,7 +6,7 @@
 2. 点击左侧栏 **"+ New Chat"** 创建新会话
 3. 填写八字测算表单（出生时间、性别、出生地、测算方向）
 4. 点击 **"开始测算"** 按钮
-5. 等待 AI 回复测算结果
+5. 等待 AI 回复测算结果（回复内容会实时逐字显示）
 
 ## 功能说明
 
@@ -16,6 +16,14 @@
 - **双击**会话标题可重命名，按 **Enter** 保存，按 **Esc** 取消，点击其他区域自动保存
 - 首次提交八字表单后，会话标题会自动更新为八字摘要信息（如"1990年3月15日 14:30 男 财运、事业"）
 - 点击 **x** 按钮删除会话
+
+### 流式输出
+
+AI 回复采用流式输出（Server-Sent Events），内容逐字实时显示，无需等待完整回复。
+
+### 思考过程
+
+如果使用的 LLM 模型支持思考/推理功能（如 DeepSeek），AI 的思考过程会显示在回复气泡顶部。默认折叠，点击 **"思考过程"** 可展开查看详细推理内容。
 
 ### 八字测算表单
 
@@ -46,8 +54,8 @@
 | GET | `/api/chat/conversations` | 获取会话列表 |
 | PATCH | `/api/chat/conversations/{id}` | 更新会话标题 |
 | GET | `/api/chat/conversations/{id}/messages` | 获取会话消息记录 |
-| POST | `/api/chat/conversations/{id}/chat` | 发送消息并获取回复 |
-| POST | `/api/chat/conversations/{id}/retry` | 重试最后一轮对话 |
+| POST | `/api/chat/conversations/{id}/chat` | 发送消息并获取流式回复（SSE） |
+| POST | `/api/chat/conversations/{id}/retry` | 重试最后一轮对话（SSE） |
 | DELETE | `/api/chat/conversations/{id}` | 删除会话 |
 | GET | `/api/system/health` | 健康检查 |
 

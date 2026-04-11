@@ -1,6 +1,7 @@
 """Chat controller: only calls ChatService, never domain/manager layers directly."""
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from library.base.api_response import ApiResponse
@@ -68,26 +69,32 @@ def delete_conversation(
     return ApiResponse.success(message="Conversation deleted")
 
 
-@router.post(
-    "/conversations/{conversation_id}/chat",
-    response_model=ApiResponse[MessageVO],
-)
+@router.post("/conversations/{conversation_id}/chat")
 async def chat(
     conversation_id: str,
     req: ChatRequest,
     service: ChatService = Depends(_get_service),
 ):
-    data = await service.chat(conversation_id, req.message)
-    return ApiResponse.success(data=data)
+    return StreamingResponse(
+        service.chat_stream(conversation_id, req.message),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
-@router.post(
-    "/conversations/{conversation_id}/retry",
-    response_model=ApiResponse[MessageVO],
-)
+@router.post("/conversations/{conversation_id}/retry")
 async def retry(
     conversation_id: str,
     service: ChatService = Depends(_get_service),
 ):
-    data = await service.retry(conversation_id)
-    return ApiResponse.success(data=data)
+    return StreamingResponse(
+        service.retry_stream(conversation_id),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
