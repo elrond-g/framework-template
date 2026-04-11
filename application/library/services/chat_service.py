@@ -55,6 +55,14 @@ class ChatService:
             }
             if m.thinking:
                 msg_dict["thinking"] = m.thinking
+            if m.input_tokens is not None:
+                msg_dict["input_tokens"] = m.input_tokens
+            if m.output_tokens is not None:
+                msg_dict["output_tokens"] = m.output_tokens
+            if m.thinking_duration_ms is not None:
+                msg_dict["thinking_duration_ms"] = m.thinking_duration_ms
+            if m.total_duration_ms is not None:
+                msg_dict["total_duration_ms"] = m.total_duration_ms
             result.append(msg_dict)
         return result
 
@@ -93,7 +101,7 @@ class ChatService:
 
         # 调用领域命令，捕获 LLM 异常避免半成品状态
         try:
-            reply = await self.chat_command.execute(
+            reply, usage = await self.chat_command.execute(
                 history=history,
                 user_message=user_message,
             )
@@ -107,7 +115,11 @@ class ChatService:
 
         # 保存助手回复
         assistant_msg = self.manager.add_message(
-            conversation_id, role="assistant", content=reply
+            conversation_id, role="assistant", content=reply,
+            input_tokens=usage.input_tokens,
+            output_tokens=usage.output_tokens,
+            thinking_duration_ms=usage.thinking_duration_ms,
+            total_duration_ms=usage.total_duration_ms,
         )
 
         return {
@@ -138,6 +150,7 @@ class ChatService:
 
         full_thinking = ""
         full_content = ""
+        usage_data: dict = {}
 
         try:
             async for event_type, chunk in self.chat_command.execute_stream(
@@ -146,9 +159,12 @@ class ChatService:
             ):
                 if event_type == "thinking":
                     full_thinking += chunk
+                    yield self._sse_event("thinking", chunk)
+                elif event_type == "usage":
+                    usage_data = json.loads(chunk)
                 else:
                     full_content += chunk
-                yield self._sse_event(event_type, chunk)
+                    yield self._sse_event(event_type, chunk)
         except LLMException as exc:
             logger.warning("流式 LLM 调用失败，会话 %s: %s", conversation_id, exc.message)
             error_reply = f"[系统提示] {exc.message}"
@@ -158,13 +174,20 @@ class ChatService:
             yield self._sse_error(exc.message)
             return
 
-        # 保存完整 assistant 回复（content + thinking）
+        # 保存完整 assistant 回复（content + thinking + 统计数据）
         assistant_msg = self.manager.add_message(
             conversation_id, role="assistant", content=full_content,
             thinking=full_thinking or None,
+            input_tokens=usage_data.get("input_tokens"),
+            output_tokens=usage_data.get("output_tokens"),
+            thinking_duration_ms=usage_data.get("thinking_duration_ms"),
+            total_duration_ms=usage_data.get("total_duration_ms"),
         )
 
-        yield self._sse_done(assistant_msg.id, str(assistant_msg.created_at), full_thinking)
+        yield self._sse_done(
+            assistant_msg.id, str(assistant_msg.created_at),
+            full_thinking, usage_data,
+        )
 
     async def retry(self, conversation_id: str) -> dict:
         """非流式重试（保留兼容）。"""
@@ -193,7 +216,7 @@ class ChatService:
         ]
 
         try:
-            reply = await self.chat_command.execute(
+            reply, usage = await self.chat_command.execute(
                 history=history,
                 user_message=last_user_msg.content,
             )
@@ -206,7 +229,11 @@ class ChatService:
             raise
 
         assistant_msg = self.manager.add_message(
-            conversation_id, role="assistant", content=reply
+            conversation_id, role="assistant", content=reply,
+            input_tokens=usage.input_tokens,
+            output_tokens=usage.output_tokens,
+            thinking_duration_ms=usage.thinking_duration_ms,
+            total_duration_ms=usage.total_duration_ms,
         )
 
         return {
@@ -249,6 +276,7 @@ class ChatService:
 
         full_thinking = ""
         full_content = ""
+        usage_data: dict = {}
 
         try:
             async for event_type, chunk in self.chat_command.execute_stream(
@@ -257,9 +285,12 @@ class ChatService:
             ):
                 if event_type == "thinking":
                     full_thinking += chunk
+                    yield self._sse_event("thinking", chunk)
+                elif event_type == "usage":
+                    usage_data = json.loads(chunk)
                 else:
                     full_content += chunk
-                yield self._sse_event(event_type, chunk)
+                    yield self._sse_event(event_type, chunk)
         except LLMException as exc:
             logger.warning("流式重试 LLM 调用失败，会话 %s: %s", conversation_id, exc.message)
             error_reply = f"[系统提示] {exc.message}"
@@ -272,9 +303,16 @@ class ChatService:
         assistant_msg = self.manager.add_message(
             conversation_id, role="assistant", content=full_content,
             thinking=full_thinking or None,
+            input_tokens=usage_data.get("input_tokens"),
+            output_tokens=usage_data.get("output_tokens"),
+            thinking_duration_ms=usage_data.get("thinking_duration_ms"),
+            total_duration_ms=usage_data.get("total_duration_ms"),
         )
 
-        yield self._sse_done(assistant_msg.id, str(assistant_msg.created_at), full_thinking)
+        yield self._sse_done(
+            assistant_msg.id, str(assistant_msg.created_at),
+            full_thinking, usage_data,
+        )
 
     # ── SSE 格式辅助方法 ──
 
@@ -284,11 +322,22 @@ class ChatService:
         return f"data: {payload}\n\n"
 
     @staticmethod
-    def _sse_done(msg_id: str, created_at: str, thinking: str = "") -> str:
-        payload = json.dumps(
-            {"type": "done", "id": msg_id, "created_at": created_at, "thinking": thinking},
-            ensure_ascii=False,
-        )
+    def _sse_done(
+        msg_id: str, created_at: str, thinking: str = "",
+        usage_data: dict | None = None,
+    ) -> str:
+        payload_dict: dict = {
+            "type": "done",
+            "id": msg_id,
+            "created_at": created_at,
+            "thinking": thinking,
+        }
+        if usage_data:
+            payload_dict["input_tokens"] = usage_data.get("input_tokens")
+            payload_dict["output_tokens"] = usage_data.get("output_tokens")
+            payload_dict["thinking_duration_ms"] = usage_data.get("thinking_duration_ms")
+            payload_dict["total_duration_ms"] = usage_data.get("total_duration_ms")
+        payload = json.dumps(payload_dict, ensure_ascii=False)
         return f"data: {payload}\n\n"
 
     @staticmethod

@@ -96,6 +96,10 @@ function ChatWindow({ conversationId, onTitleUpdated }) {
               content: streamRef.current.content,
               thinking: data.thinking || streamRef.current.thinking,
               created_at: data.created_at,
+              input_tokens: data.input_tokens,
+              output_tokens: data.output_tokens,
+              thinking_duration_ms: data.thinking_duration_ms,
+              total_duration_ms: data.total_duration_ms,
             };
           }
           return copy;
@@ -176,6 +180,10 @@ function ChatWindow({ conversationId, onTitleUpdated }) {
               content: streamRef.current.content,
               thinking: data.thinking || streamRef.current.thinking,
               created_at: data.created_at,
+              input_tokens: data.input_tokens,
+              output_tokens: data.output_tokens,
+              thinking_duration_ms: data.thinking_duration_ms,
+              total_duration_ms: data.total_duration_ms,
             };
           }
           return copy;
@@ -223,16 +231,35 @@ function ChatWindow({ conversationId, onTitleUpdated }) {
     <div className="chat-window">
       <div className="messages">
         {error && <div className="chat-error-tip">{error}</div>}
-        {messages.map((msg) => (
-          <MessageBubble
-            key={msg.id}
-            role={msg.role}
-            content={msg.content}
-            thinking={msg.thinking}
-            showRetry={!loading && msg.id === lastRetryableId}
-            onRetry={handleRetry}
-          />
-        ))}
+        {messages.map((msg) => {
+          // 流式占位消息且尚无内容时，显示加载动画代替空气泡
+          if (msg._streaming && !msg.content && !msg.thinking) {
+            return (
+              <div key={msg.id} className="message-bubble assistant loading-bubble">
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span className="typing-label">正在思考</span>
+                </div>
+              </div>
+            );
+          }
+          return (
+            <MessageBubble
+              key={msg.id}
+              role={msg.role}
+              content={msg.content}
+              thinking={msg.thinking}
+              showRetry={!loading && msg.id === lastRetryableId}
+              onRetry={handleRetry}
+              inputTokens={msg.input_tokens}
+              outputTokens={msg.output_tokens}
+              thinkingDurationMs={msg.thinking_duration_ms}
+              totalDurationMs={msg.total_duration_ms}
+            />
+          );
+        })}
         <div ref={bottomRef} />
       </div>
       {isNewConversation ? (

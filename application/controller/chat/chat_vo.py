@@ -21,6 +21,11 @@ class MessageVO(BaseModel):
     role: str
     content: str
     created_at: str
+    thinking: Optional[str] = None
+    input_tokens: Optional[int] = None
+    output_tokens: Optional[int] = None
+    thinking_duration_ms: Optional[int] = None
+    total_duration_ms: Optional[int] = None
 
 
 class ConversationVO(BaseModel):

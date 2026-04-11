@@ -2,7 +2,10 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-function MessageBubble({ role, content, thinking, showRetry, onRetry }) {
+function MessageBubble({
+  role, content, thinking, showRetry, onRetry,
+  inputTokens, outputTokens, thinkingDurationMs, totalDurationMs,
+}) {
   const [thinkingExpanded, setThinkingExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -25,6 +28,8 @@ function MessageBubble({ role, content, thinking, showRetry, onRetry }) {
       setTimeout(() => setCopied(false), 2000);
     }
   };
+
+  const hasStats = role === "assistant" && (inputTokens != null || outputTokens != null || totalDurationMs != null);
 
   return (
     <div className={`message-bubble ${role}`}>
@@ -88,6 +93,18 @@ function MessageBubble({ role, content, thinking, showRetry, onRetry }) {
           </button>
         )}
       </div>
+      {hasStats && (
+        <div className="message-stats">
+          {inputTokens != null && <span>输入 {inputTokens}</span>}
+          {outputTokens != null && <span>输出 {outputTokens}</span>}
+          {thinkingDurationMs != null && thinkingDurationMs > 0 && (
+            <span>思考 {(thinkingDurationMs / 1000).toFixed(1)}s</span>
+          )}
+          {totalDurationMs != null && (
+            <span>耗时 {(totalDurationMs / 1000).toFixed(1)}s</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

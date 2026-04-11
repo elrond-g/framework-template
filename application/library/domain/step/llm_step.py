@@ -7,6 +7,7 @@ phrase 层组合 step，但 step 不调用其他领域层。
 import asyncio
 import json
 import uuid
+from dataclasses import dataclass, asdict
 from datetime import datetime
 from typing import AsyncGenerator
 
@@ -18,11 +19,20 @@ from library.base.llm_logger import log_llm_request
 from library.base.logger import logger
 
 
+@dataclass
+class LLMUsage:
+    """LLM 调用的统计数据。"""
+    input_tokens: int = 0
+    output_tokens: int = 0
+    thinking_duration_ms: int = 0
+    total_duration_ms: int = 0
+
+
 class LLMStep:
     """原子步骤：向 LLM 发送消息并返回原始回复。"""
 
-    async def call_llm(self, messages: list[dict]) -> str:
-        """发送 chat-completion 请求并返回 assistant 内容（非流式）。"""
+    async def call_llm(self, messages: list[dict]) -> tuple[str, LLMUsage]:
+        """发送 chat-completion 请求并返回 (assistant 内容, 统计数据)（非流式）。"""
         request_id = uuid.uuid4().hex[:8]
         input_length = len(json.dumps(messages, ensure_ascii=False))
         start_time = datetime.now()
@@ -31,6 +41,7 @@ class LLMStep:
             reply = self._mock_response(messages)
             end_time = datetime.now()
             duration_s = (end_time - start_time).total_seconds() or 0.001
+            total_duration_ms = int((end_time - start_time).total_seconds() * 1000)
             log_llm_request(
                 request_id=request_id,
                 start_time=start_time,
@@ -43,7 +54,13 @@ class LLMStep:
                 request_content=messages,
                 response_content=reply,
             )
-            return reply
+            usage = LLMUsage(
+                input_tokens=input_length,
+                output_tokens=len(reply),
+                thinking_duration_ms=0,
+                total_duration_ms=total_duration_ms,
+            )
+            return reply, usage
 
         error_reason: str | None = None
         try:
@@ -100,8 +117,18 @@ class LLMStep:
             self._log_failed(request_id, start_time, input_length, error_reason, messages, response.text[:500])
             raise LLMException("LLM 响应格式异常，无法解析")
 
-        # 成功日志
+        # 提取 usage 统计
         end_time = datetime.now()
+        total_duration_ms = int((end_time - start_time).total_seconds() * 1000)
+        api_usage = data.get("usage", {})
+        usage = LLMUsage(
+            input_tokens=api_usage.get("prompt_tokens", 0),
+            output_tokens=api_usage.get("completion_tokens", 0),
+            thinking_duration_ms=0,
+            total_duration_ms=total_duration_ms,
+        )
+
+        # 成功日志
         duration_s = (end_time - start_time).total_seconds() or 0.001
         log_llm_request(
             request_id=request_id,
@@ -115,32 +142,37 @@ class LLMStep:
             request_content=messages,
             response_content=reply,
         )
-        return reply
+        return reply, usage
 
     async def call_llm_stream(
         self, messages: list[dict]
     ) -> AsyncGenerator[tuple[str, str], None]:
         """流式调用 LLM，yield (event_type, chunk) 元组。
 
-        event_type: "thinking" | "content"
-        chunk: 增量文本片段
+        event_type: "thinking" | "content" | "usage"
+        chunk: 增量文本片段，usage 类型时为 JSON 字符串
         """
         request_id = uuid.uuid4().hex[:8]
         input_length = len(json.dumps(messages, ensure_ascii=False))
         start_time = datetime.now()
         first_token_time: datetime | None = None
+        first_content_time: datetime | None = None
 
         if not settings.llm_api_key:
             # Mock 模式：模拟流式输出
             async for event_type, chunk in self._mock_stream(messages):
                 if first_token_time is None:
                     first_token_time = datetime.now()
+                if event_type == "content" and first_content_time is None:
+                    first_content_time = datetime.now()
                 yield event_type, chunk
 
             end_time = datetime.now()
             mock_reply = self._mock_response(messages)
             ttft = ((first_token_time or end_time) - start_time).total_seconds() * 1000
             duration_s = (end_time - start_time).total_seconds() or 0.001
+            total_duration_ms = int((end_time - start_time).total_seconds() * 1000)
+            thinking_duration_ms = int(((first_content_time or end_time) - start_time).total_seconds() * 1000)
             log_llm_request(
                 request_id=request_id,
                 start_time=start_time,
@@ -153,10 +185,18 @@ class LLMStep:
                 request_content=messages,
                 response_content=mock_reply,
             )
+            usage = LLMUsage(
+                input_tokens=input_length,
+                output_tokens=len(mock_reply),
+                thinking_duration_ms=thinking_duration_ms,
+                total_duration_ms=total_duration_ms,
+            )
+            yield "usage", json.dumps(asdict(usage), ensure_ascii=False)
             return
 
         full_thinking = ""
         full_content = ""
+        stream_usage: dict = {}
 
         try:
             async with httpx.AsyncClient(timeout=120) as client:
@@ -166,6 +206,7 @@ class LLMStep:
                     "max_tokens": settings.llm_max_tokens,
                     "temperature": settings.llm_temperature,
                     "stream": True,
+                    "stream_options": {"include_usage": True},
                 }
                 if settings.llm_enable_thinking:
                     request_body["reasoning_effort"] = "high"
@@ -209,6 +250,11 @@ class LLMStep:
                             except json.JSONDecodeError:
                                 continue
 
+                            # 提取流式 usage（最后一个 chunk 包含）
+                            chunk_usage = data.get("usage")
+                            if chunk_usage:
+                                stream_usage = chunk_usage
+
                             delta = (
                                 data.get("choices", [{}])[0]
                                 .get("delta", {})
@@ -236,6 +282,8 @@ class LLMStep:
                             if content:
                                 if first_token_time is None:
                                     first_token_time = datetime.now()
+                                if first_content_time is None:
+                                    first_content_time = datetime.now()
                                 full_content += content
                                 yield "content", content
 
@@ -274,6 +322,17 @@ class LLMStep:
             request_content=messages,
             response_content=total_output,
         )
+
+        # 构建统计数据并 yield usage 事件
+        total_duration_ms = int((end_time - start_time).total_seconds() * 1000)
+        thinking_duration_ms = int(((first_content_time or end_time) - start_time).total_seconds() * 1000) if full_thinking else 0
+        usage = LLMUsage(
+            input_tokens=stream_usage.get("prompt_tokens", 0),
+            output_tokens=stream_usage.get("completion_tokens", 0),
+            thinking_duration_ms=thinking_duration_ms,
+            total_duration_ms=total_duration_ms,
+        )
+        yield "usage", json.dumps(asdict(usage), ensure_ascii=False)
 
     @staticmethod
     async def _mock_stream(
