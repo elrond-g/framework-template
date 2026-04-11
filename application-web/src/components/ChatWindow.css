@@ -491,6 +491,36 @@
   flex-shrink: 0;
 }
 
+.save-img-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #999;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.save-img-btn:hover {
+  background: rgba(108, 92, 231, 0.15);
+  color: #b8b0f0;
+  border-color: rgba(108, 92, 231, 0.3);
+}
+
+.save-img-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.save-img-btn svg {
+  flex-shrink: 0;
+}
+
 .message-bubble.error .retry-btn {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.2);
