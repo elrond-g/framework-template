@@ -255,10 +255,10 @@ class LLMStep:
                             if chunk_usage:
                                 stream_usage = chunk_usage
 
-                            delta = (
-                                data.get("choices", [{}])[0]
-                                .get("delta", {})
-                            )
+                            choices = data.get("choices", [])
+                            if not choices:
+                                continue
+                            delta = choices[0].get("delta", {})
 
                             # 调试：打印原始 delta 字段，排查 thinking 字段名
                             if delta:
