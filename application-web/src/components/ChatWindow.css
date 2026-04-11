@@ -409,11 +409,43 @@
   accent-color: #6c5ce7;
 }
 
+/* 消息操作栏 */
+.message-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #999;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.copy-btn:hover {
+  background: rgba(108, 92, 231, 0.15);
+  color: #b8b0f0;
+  border-color: rgba(108, 92, 231, 0.3);
+}
+
+.copy-btn svg {
+  flex-shrink: 0;
+}
+
 .retry-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 8px;
   padding: 4px 10px;
   background: rgba(255, 255, 255, 0.08);
   color: #999;

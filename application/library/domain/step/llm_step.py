@@ -214,8 +214,17 @@ class LLMStep:
                                 .get("delta", {})
                             )
 
-                            # 思考内容：reasoning_content（DeepSeek）
-                            reasoning = delta.get("reasoning_content", "")
+                            # 调试：打印原始 delta 字段，排查 thinking 字段名
+                            if delta:
+                                logger.debug("SSE delta keys=%s, delta=%s", list(delta.keys()), str(delta)[:200])
+
+                            # 思考内容：兼容多种字段名
+                            # - reasoning_content: DeepSeek / 部分 new-api 代理
+                            # - reasoning: OpenRouter 等代理
+                            reasoning = (
+                                delta.get("reasoning_content", "")
+                                or delta.get("reasoning", "")
+                            )
                             if reasoning:
                                 if first_token_time is None:
                                     first_token_time = datetime.now()

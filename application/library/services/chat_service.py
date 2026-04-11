@@ -45,15 +45,18 @@ class ChatService:
         if not conversation:
             raise NotFoundException(f"会话 {conversation_id} 不存在")
         messages = self.manager.get_messages(conversation_id)
-        return [
-            {
+        result = []
+        for m in messages:
+            msg_dict = {
                 "id": m.id,
                 "role": m.role,
                 "content": m.content,
                 "created_at": str(m.created_at),
             }
-            for m in messages
-        ]
+            if m.thinking:
+                msg_dict["thinking"] = m.thinking
+            result.append(msg_dict)
+        return result
 
     def update_conversation(self, conversation_id: str, title: str) -> dict:
         """更新会话标题。"""
@@ -155,9 +158,10 @@ class ChatService:
             yield self._sse_error(exc.message)
             return
 
-        # 保存完整 assistant 回复（content 部分）
+        # 保存完整 assistant 回复（content + thinking）
         assistant_msg = self.manager.add_message(
-            conversation_id, role="assistant", content=full_content
+            conversation_id, role="assistant", content=full_content,
+            thinking=full_thinking or None,
         )
 
         yield self._sse_done(assistant_msg.id, str(assistant_msg.created_at), full_thinking)
@@ -266,7 +270,8 @@ class ChatService:
             return
 
         assistant_msg = self.manager.add_message(
-            conversation_id, role="assistant", content=full_content
+            conversation_id, role="assistant", content=full_content,
+            thinking=full_thinking or None,
         )
 
         yield self._sse_done(assistant_msg.id, str(assistant_msg.created_at), full_thinking)

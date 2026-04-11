@@ -72,10 +72,10 @@ class ConversationManager:
         return True
 
     def add_message(
-        self, conversation_id: str, role: str, content: str
+        self, conversation_id: str, role: str, content: str, thinking: str | None = None
     ) -> Message:
         message = Message(
-            conversation_id=conversation_id, role=role, content=content
+            conversation_id=conversation_id, role=role, content=content, thinking=thinking
         )
         self.db.add(message)
         self._commit()
