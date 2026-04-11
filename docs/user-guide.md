@@ -27,7 +27,7 @@ AI 回复内容支持 Markdown 格式渲染，包括：标题、加粗/斜体、
 
 ### 思考过程
 
-如果使用的 LLM 模型支持思考/推理功能（如 DeepSeek），AI 的思考过程会显示在回复气泡顶部。默认折叠，点击 **"思考过程"** 可展开查看详细推理内容。
+如果使用的 LLM 模型支持思考/推理功能（如 Claude、DeepSeek），并且开启了深度思考配置（`LLM_ENABLE_THINKING=true`），AI 的思考过程会显示在回复气泡顶部。默认折叠，点击 **"思考过程"** 可展开查看详细推理内容。
 
 ### 八字测算表单
 
@@ -69,6 +69,8 @@ AI 回复内容支持 Markdown 格式渲染，包括：标题、加粗/斜体、
 
 - `LLM_API_KEY` — LLM 提供商的 API Key
 - `LLM_MODEL` — 使用的模型（默认：gpt-4）
+- `LLM_ENABLE_THINKING` — 是否启用深度思考（默认：true）
+- `LLM_THINKING_BUDGET_TOKENS` — 深度思考 token 预算（默认：10000）
 - `DATABASE_URL` — 数据库连接字符串
 
 未配置 API Key 时，系统会返回 Mock 响应，方便测试。

@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 2048
     llm_temperature: float = 0.7
 
+    # LLM 深度思考
+    llm_enable_thinking: bool = True
+    llm_thinking_budget_tokens: int = 10000
+
     # Logging
     log_dir: str = "logs"
     log_max_bytes: int = 10 * 1024 * 1024  # 10MB

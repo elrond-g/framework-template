@@ -48,18 +48,26 @@ class LLMStep:
         error_reason: str | None = None
         try:
             async with httpx.AsyncClient(timeout=60) as client:
+                request_body = {
+                    "model": settings.llm_model,
+                    "messages": messages,
+                    "max_tokens": settings.llm_max_tokens,
+                    "temperature": settings.llm_temperature,
+                }
+                if settings.llm_enable_thinking:
+                    request_body["reasoning_effort"] = "high"
+                    request_body["enable_thinking"] = True
+                    request_body["thinking"] = {
+                        "budget_tokens": settings.llm_thinking_budget_tokens,
+                    }
+
                 response = await client.post(
                     f"{settings.llm_api_base_url}/chat/completions",
                     headers={
                         "Authorization": f"Bearer {settings.llm_api_key}",
                         "Content-Type": "application/json",
                     },
-                    json={
-                        "model": settings.llm_model,
-                        "messages": messages,
-                        "max_tokens": settings.llm_max_tokens,
-                        "temperature": settings.llm_temperature,
-                    },
+                    json=request_body,
                 )
                 response.raise_for_status()
         except httpx.TimeoutException:
@@ -152,6 +160,20 @@ class LLMStep:
 
         try:
             async with httpx.AsyncClient(timeout=120) as client:
+                request_body = {
+                    "model": settings.llm_model,
+                    "messages": messages,
+                    "max_tokens": settings.llm_max_tokens,
+                    "temperature": settings.llm_temperature,
+                    "stream": True,
+                }
+                if settings.llm_enable_thinking:
+                    request_body["reasoning_effort"] = "high"
+                    request_body["enable_thinking"] = True
+                    request_body["thinking"] = {
+                        "budget_tokens": settings.llm_thinking_budget_tokens,
+                    }
+
                 async with client.stream(
                     "POST",
                     f"{settings.llm_api_base_url}/chat/completions",
@@ -159,13 +181,7 @@ class LLMStep:
                         "Authorization": f"Bearer {settings.llm_api_key}",
                         "Content-Type": "application/json",
                     },
-                    json={
-                        "model": settings.llm_model,
-                        "messages": messages,
-                        "max_tokens": settings.llm_max_tokens,
-                        "temperature": settings.llm_temperature,
-                        "stream": True,
-                    },
+                    json=request_body,
                 ) as response:
                     if response.status_code != 200:
                         body = await response.aread()
