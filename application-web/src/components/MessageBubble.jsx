@@ -1,4 +1,6 @@
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function MessageBubble({ role, content, thinking, showRetry, onRetry }) {
   const [thinkingExpanded, setThinkingExpanded] = useState(false);
@@ -32,7 +34,13 @@ function MessageBubble({ role, content, thinking, showRetry, onRetry }) {
           )}
         </div>
       )}
-      <div className="message-content">{content}</div>
+      <div className="message-content">
+        {role === "assistant" ? (
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{content || ""}</ReactMarkdown>
+        ) : (
+          content
+        )}
+      </div>
       {showRetry && (role === "assistant" || role === "error") && (
         <button className="retry-btn" onClick={onRetry}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
