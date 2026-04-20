@@ -67,6 +67,21 @@ application/
 4. 如果涉及复杂逻辑，在 `library/domain/` 下创建领域层代码
 5. 如果需要数据持久化，在 `library/models/` 添加模型，在 `library/managers/` 添加管理器
 
+## 数据模型
+
+### conversations 表
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | `VARCHAR(36)` | UUID 主键 |
+| `title` | `VARCHAR(255)` | 会话标题 |
+| `system_prompt` | `TEXT`（可空） | 该会话的自定义系统提示词。`NULL` 表示使用 `library/domain/phrase/chat_phrase.py` 中的默认 `SYSTEM_PROMPT`。`ChatService` 在每次调用 LLM 前读取此字段作为 system prompt |
+| `created_at` / `updated_at` | `DATETIME` | 时间戳 |
+
+### SQLite 轻量迁移
+
+本项目未引入 Alembic。`main.py` 的 `on_startup` 钩子在 `Base.metadata.create_all()` 之后会运行一次 `_migrate_conversations_add_system_prompt()`，对老版本 DB 幂等执行 `ALTER TABLE conversations ADD COLUMN system_prompt TEXT`。之后如需新增简单字段，可参照该函数追加迁移逻辑；若迁移复杂度提升，应引入 Alembic。
+
 ## API 响应格式
 
 所有接口返回统一格式：

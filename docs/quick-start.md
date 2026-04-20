@@ -92,10 +92,15 @@ pip install psycopg2-binary
 # 健康检查
 curl http://localhost:8000/api/system/health
 
-# 创建会话
+# 创建会话（可选：通过 system_prompt 自定义该会话的角色设定）
 curl -X POST http://localhost:8000/api/chat/conversations \
   -H "Content-Type: application/json" \
   -d '{"title": "Test"}'
+
+# 自定义角色示例：创建一个「旅游顾问」会话
+curl -X POST http://localhost:8000/api/chat/conversations \
+  -H "Content-Type: application/json" \
+  -d '{"title": "旅游顾问", "system_prompt": "你是一位资深旅游顾问，擅长日本关西地区的行程规划。"}'
 
 # 发送消息（替换 {id} 为上一步返回的会话 ID）
 curl -X POST http://localhost:8000/api/chat/conversations/{id}/chat \

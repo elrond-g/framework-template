@@ -28,10 +28,14 @@ async function request(url, options = {}) {
   }
 }
 
-export function createConversation(title = "New Conversation") {
+export function createConversation(title = "New Conversation", systemPrompt = null) {
+  const body = { title };
+  if (systemPrompt && systemPrompt.trim()) {
+    body.system_prompt = systemPrompt.trim();
+  }
   return request(`${BASE}/conversations`, {
     method: "POST",
-    body: JSON.stringify({ title }),
+    body: JSON.stringify(body),
   });
 }
 

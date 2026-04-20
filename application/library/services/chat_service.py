@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from library.base.exceptions import LLMException, NotFoundException
 from library.base.logger import logger
 from library.domain.command.chat_command import ChatCommand
+from library.domain.phrase.chat_phrase import SYSTEM_PROMPT as DEFAULT_SYSTEM_PROMPT
 from library.managers.conversation_manager import ConversationManager
 
 
@@ -20,12 +21,23 @@ class ChatService:
         self.manager = ConversationManager(db)
         self.chat_command = ChatCommand()
 
-    def create_conversation(self, title: str = "New Conversation") -> dict:
-        conversation = self.manager.create_conversation(title=title)
+    def create_conversation(
+        self,
+        title: str = "New Conversation",
+        system_prompt: str | None = None,
+    ) -> dict:
+        # 空字符串视作未填写，走默认提示词
+        normalized_prompt = system_prompt.strip() if system_prompt else None
+        if not normalized_prompt:
+            normalized_prompt = None
+        conversation = self.manager.create_conversation(
+            title=title, system_prompt=normalized_prompt,
+        )
         return {
             "id": conversation.id,
             "title": conversation.title,
             "created_at": str(conversation.created_at),
+            "system_prompt": conversation.system_prompt,
         }
 
     def list_conversations(self) -> list[dict]:
@@ -36,6 +48,7 @@ class ChatService:
                 "title": c.title,
                 "created_at": str(c.created_at),
                 "updated_at": str(c.updated_at),
+                "system_prompt": c.system_prompt,
             }
             for c in conversations
         ]
@@ -76,6 +89,7 @@ class ChatService:
             "title": conversation.title,
             "created_at": str(conversation.created_at),
             "updated_at": str(conversation.updated_at),
+            "system_prompt": conversation.system_prompt,
         }
 
     def delete_conversation(self, conversation_id: str) -> bool:
@@ -99,11 +113,14 @@ class ChatService:
             for m in messages[:-1]  # 排除刚添加的用户消息
         ]
 
+        system_prompt = conversation.system_prompt or DEFAULT_SYSTEM_PROMPT
+
         # 调用领域命令，捕获 LLM 异常避免半成品状态
         try:
             reply, usage = await self.chat_command.execute(
                 history=history,
                 user_message=user_message,
+                system_prompt=system_prompt,
             )
         except LLMException as exc:
             logger.warning("LLM 调用失败，会话 %s: %s", conversation_id, exc.message)
@@ -148,6 +165,8 @@ class ChatService:
             for m in messages[:-1]
         ]
 
+        system_prompt = conversation.system_prompt or DEFAULT_SYSTEM_PROMPT
+
         full_thinking = ""
         full_content = ""
         usage_data: dict = {}
@@ -156,6 +175,7 @@ class ChatService:
             async for event_type, chunk in self.chat_command.execute_stream(
                 history=history,
                 user_message=user_message,
+                system_prompt=system_prompt,
             ):
                 if event_type == "thinking":
                     full_thinking += chunk
@@ -215,10 +235,13 @@ class ChatService:
             if m.id != last_user_msg.id
         ]
 
+        system_prompt = conversation.system_prompt or DEFAULT_SYSTEM_PROMPT
+
         try:
             reply, usage = await self.chat_command.execute(
                 history=history,
                 user_message=last_user_msg.content,
+                system_prompt=system_prompt,
             )
         except LLMException as exc:
             logger.warning("重试 LLM 调用失败，会话 %s: %s", conversation_id, exc.message)
@@ -274,6 +297,8 @@ class ChatService:
             if m.id != last_user_msg.id
         ]
 
+        system_prompt = conversation.system_prompt or DEFAULT_SYSTEM_PROMPT
+
         full_thinking = ""
         full_content = ""
         usage_data: dict = {}
@@ -282,6 +307,7 @@ class ChatService:
             async for event_type, chunk in self.chat_command.execute_stream(
                 history=history,
                 user_message=last_user_msg.content,
+                system_prompt=system_prompt,
             ):
                 if event_type == "thinking":
                     full_thinking += chunk

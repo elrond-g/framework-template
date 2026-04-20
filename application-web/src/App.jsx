@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import ChatWindow from "./components/ChatWindow";
+import NewChatModal from "./components/NewChatModal";
 import {
   createConversation,
   listConversations,
@@ -14,6 +15,7 @@ function App() {
   const [error, setError] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
   const editInputRef = useRef(null);
 
   const loadConversations = async () => {
@@ -36,8 +38,13 @@ function App() {
     }
   }, [editingId]);
 
-  const handleNew = async () => {
-    const res = await createConversation();
+  const handleNew = () => {
+    setShowNewChatModal(true);
+  };
+
+  const handleConfirmNew = async (systemPrompt) => {
+    setShowNewChatModal(false);
+    const res = await createConversation("New Conversation", systemPrompt);
     if (res.code === 0) {
       setActiveId(res.data.id);
       loadConversations();
@@ -144,6 +151,12 @@ function App() {
           </div>
         )}
       </main>
+      {showNewChatModal && (
+        <NewChatModal
+          onConfirm={handleConfirmNew}
+          onCancel={() => setShowNewChatModal(false)}
+        />
+      )}
     </div>
   );
 }

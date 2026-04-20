@@ -19,8 +19,12 @@ class ConversationManager:
             logger.error("数据库提交失败: %s", str(exc))
             raise DatabaseException("数据库写入失败，请稍后重试")
 
-    def create_conversation(self, title: str = "New Conversation") -> Conversation:
-        conversation = Conversation(title=title)
+    def create_conversation(
+        self,
+        title: str = "New Conversation",
+        system_prompt: str | None = None,
+    ) -> Conversation:
+        conversation = Conversation(title=title, system_prompt=system_prompt)
         self.db.add(conversation)
         self._commit()
         self.db.refresh(conversation)

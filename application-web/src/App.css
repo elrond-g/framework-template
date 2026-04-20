@@ -173,3 +173,94 @@ body {
 .error-bar button:hover {
   color: white;
 }
+
+/* 新建会话弹窗 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.modal-card {
+  width: min(520px, 92vw);
+  background: #1c1c24;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #d4d4dc;
+}
+
+.modal-subtitle {
+  font-size: 13px;
+  color: #8a8a9a;
+}
+
+.modal-textarea {
+  width: 100%;
+  background: #0f0f14;
+  color: #d4d4dc;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.modal-textarea:focus {
+  border-color: #6c5ce7;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.modal-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.modal-btn:hover {
+  opacity: 0.9;
+}
+
+.modal-btn:active {
+  transform: translateY(1px);
+}
+
+.modal-btn-cancel {
+  background: transparent;
+  color: #b0b0bc;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-btn-primary {
+  background: linear-gradient(135deg, #6c5ce7, #a855f7);
+  color: #fff;
+}

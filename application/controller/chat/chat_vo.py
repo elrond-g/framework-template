@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 class CreateConversationRequest(BaseModel):
     title: str = Field(default="New Conversation", max_length=255)
+    system_prompt: Optional[str] = Field(default=None, max_length=10000)
 
 
 class UpdateConversationRequest(BaseModel):
@@ -33,6 +34,7 @@ class ConversationVO(BaseModel):
     title: str
     created_at: str
     updated_at: Optional[str] = None
+    system_prompt: Optional[str] = None
 
 
 class ConversationDetailVO(BaseModel):

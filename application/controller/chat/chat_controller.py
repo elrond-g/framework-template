@@ -28,7 +28,10 @@ def create_conversation(
     req: CreateConversationRequest = CreateConversationRequest(),
     service: ChatService = Depends(_get_service),
 ):
-    data = service.create_conversation(title=req.title)
+    data = service.create_conversation(
+        title=req.title,
+        system_prompt=req.system_prompt,
+    )
     return ApiResponse.success(data=data)
 
 
