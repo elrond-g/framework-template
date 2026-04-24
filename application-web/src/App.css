@@ -264,3 +264,40 @@ body {
   background: linear-gradient(135deg, #6c5ce7, #a855f7);
   color: #fff;
 }
+
+/* 弹窗 Tab 切换 */
+.modal-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 4px;
+}
+
+.modal-tab {
+  background: transparent;
+  border: none;
+  color: #8a8a9a;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+
+.modal-tab:hover {
+  color: #d4d4dc;
+}
+
+.modal-tab.active {
+  color: #fff;
+  border-bottom-color: #a855f7;
+}
+
+/* 弹窗里 Primary 按钮的禁用态 */
+.modal-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

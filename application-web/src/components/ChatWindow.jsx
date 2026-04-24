@@ -5,28 +5,48 @@ import MessageInput from "./MessageInput";
 import TextInput from "./TextInput";
 import "./ChatWindow.css";
 
-function ChatWindow({ conversationId, onTitleUpdated }) {
+function ChatWindow({ conversationId, onTitleUpdated, initialMessage, onInitialMessageConsumed }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const bottomRef = useRef(null);
   // 用 ref 跟踪流式拼接，避免闭包陈旧问题
   const streamRef = useRef({ thinking: "", content: "" });
+  // 用 ref 读取最新的 initialMessage，避免加入 useEffect 依赖触发重复加载
+  const initialMessageRef = useRef(initialMessage);
+  useEffect(() => {
+    initialMessageRef.current = initialMessage;
+  }, [initialMessage]);
+  // 记录上一次已初始化的 conversationId，StrictMode 下 effect 双跑时用于幂等短路，
+  // 防止第二次 setMessages([]) 清空刚刚插入的 streaming 消息
+  const initializedConvIdRef = useRef(null);
 
   const loadMessages = async () => {
     setError(null);
     const res = await getMessages(conversationId);
     if (res.code === 0) {
       setMessages(res.data || []);
-    } else {
-      setError(res.message);
+      return res.data || [];
     }
+    setError(res.message);
+    return [];
   };
 
   useEffect(() => {
+    if (initializedConvIdRef.current === conversationId) return;
+    initializedConvIdRef.current = conversationId;
     setMessages([]);
     setError(null);
-    loadMessages();
+    (async () => {
+      const loaded = await loadMessages();
+      const pending = initialMessageRef.current;
+      // 仅当新会话且外层挂有首条消息时，自动发起首轮对话
+      if (pending && loaded.length === 0) {
+        onInitialMessageConsumed?.();
+        handleSend(pending.text, pending.formData);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);
 
   useEffect(() => {

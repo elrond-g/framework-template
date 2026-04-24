@@ -16,6 +16,7 @@ function App() {
   const [editingId, setEditingId] = useState(null);
   const [editingTitle, setEditingTitle] = useState("");
   const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [pendingFirstMessage, setPendingFirstMessage] = useState(null);
   const editInputRef = useRef(null);
 
   const loadConversations = async () => {
@@ -42,15 +43,21 @@ function App() {
     setShowNewChatModal(true);
   };
 
-  const handleConfirmNew = async (systemPrompt) => {
+  const handleConfirmNew = async (payload) => {
     setShowNewChatModal(false);
+    // preset：使用默认 system_prompt，创建后直接带着首条消息发起对话
+    // custom：把自定义 system_prompt 持久化到会话
+    const systemPrompt = payload.kind === "custom" ? payload.systemPrompt : "";
     const res = await createConversation("New Conversation", systemPrompt);
-    if (res.code === 0) {
-      setActiveId(res.data.id);
-      loadConversations();
-    } else {
+    if (res.code !== 0) {
       setError(res.message);
+      return;
     }
+    if (payload.kind === "preset") {
+      setPendingFirstMessage({ text: payload.prompt, formData: payload.formData });
+    }
+    setActiveId(res.data.id);
+    loadConversations();
   };
 
   const handleDelete = async (id) => {
@@ -143,7 +150,12 @@ function App() {
           </div>
         )}
         {activeId ? (
-          <ChatWindow conversationId={activeId} onTitleUpdated={loadConversations} />
+          <ChatWindow
+            conversationId={activeId}
+            onTitleUpdated={loadConversations}
+            initialMessage={pendingFirstMessage}
+            onInitialMessageConsumed={() => setPendingFirstMessage(null)}
+          />
         ) : (
           <div className="empty-state">
             <h2>Welcome to Fleeting</h2>
