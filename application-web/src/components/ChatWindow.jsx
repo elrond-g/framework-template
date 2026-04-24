@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { getMessages, updateConversation, sendMessageStream, retryMessageStream } from "../api/chat";
 import MessageBubble from "./MessageBubble";
-import MessageInput from "./MessageInput";
 import TextInput from "./TextInput";
 import "./ChatWindow.css";
 
@@ -234,9 +233,6 @@ function ChatWindow({ conversationId, onTitleUpdated, initialMessage, onInitialM
     });
   };
 
-  // 会话无消息时显示八字表单，有消息后显示普通输入框
-  const isNewConversation = messages.length === 0;
-
   // 找到最后一条 assistant/error 消息的 id，用于显示重试按钮
   let lastRetryableId = null;
   for (let i = messages.length - 1; i >= 0; i--) {
@@ -282,11 +278,7 @@ function ChatWindow({ conversationId, onTitleUpdated, initialMessage, onInitialM
         })}
         <div ref={bottomRef} />
       </div>
-      {isNewConversation ? (
-        <MessageInput onSend={handleSend} disabled={loading} />
-      ) : (
-        <TextInput onSend={handleTextSend} disabled={loading} />
-      )}
+      <TextInput onSend={handleTextSend} disabled={loading} />
     </div>
   );
 }

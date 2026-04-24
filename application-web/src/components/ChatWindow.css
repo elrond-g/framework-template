@@ -58,16 +58,7 @@
   50% { opacity: 1; }
 }
 
-/* Message input area */
-.message-input-wrapper {
-  padding: 16px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  background: #141419;
-  overflow-y: auto;
-  max-height: 50vh;
-}
-
-/* Bazi form */
+/* Bazi form — 用于 NewChatModal 的「预置提示词」Tab */
 .bazi-form {
   display: flex;
   flex-direction: column;
@@ -181,35 +172,6 @@
   font-size: 12px;
   font-family: inherit;
   transition: border-color 0.15s;
-}
-
-.bazi-submit {
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(135deg, #6c5ce7, #a855f7);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  margin-top: 4px;
-  transition: opacity 0.2s, transform 0.1s;
-}
-
-.bazi-submit:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.bazi-submit:active {
-  transform: translateY(0);
-}
-
-.bazi-submit:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  transform: none;
 }
 
 .bazi-form input:focus,
