@@ -38,13 +38,24 @@ npm run dev                     # 启动在 http://localhost:5173
 
 > 未配置 `LLM_API_KEY` 时返回 Mock 响应，可直接用于 UI 开发调试。
 
+### 运行测试
+
+```bash
+cd application
+pytest                          # 运行全部单元测试
+```
+
+测试使用内存 SQLite + Mock LLM，无需额外配置。任何代码改动都必须同步补充或更新测试（详见 `CLAUDE.md` 与 `docs/development-guide.md`）。
+
 ## 项目结构
 
 ```
 ├── application/           # 后端 — Python / FastAPI
 │   ├── main.py            # 入口
+│   ├── pytest.ini         # pytest 配置
 │   ├── config/            # 配置（pydantic-settings + .env）
 │   ├── controller/        # 控制器层（HTTP 接口 + VO）
+│   ├── tests/             # 单元测试
 │   └── library/
 │       ├── base/          # 基础工具（统一响应、异常处理）
 │       ├── domain/        # 领域驱动层（command → phrase → step）

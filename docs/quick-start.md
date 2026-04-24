@@ -86,7 +86,17 @@ DATABASE_URL=postgresql://user:password@localhost:5432/chatbot
 pip install psycopg2-binary
 ```
 
-## 6. 验证安装
+## 6. 运行单元测试
+
+```bash
+cd application
+pytest                            # 全部用例
+pytest -k chat_service            # 按名称筛选
+```
+
+所有用例走内存 SQLite + Mock LLM，无需额外配置。
+
+## 7. 验证安装
 
 ```bash
 # 健康检查
@@ -108,7 +118,7 @@ curl -X POST http://localhost:8000/api/chat/conversations/{id}/chat \
   -d '{"message": "Hello!"}'
 ```
 
-## 7. 生产构建
+## 8. 生产构建
 
 ```bash
 # 前端构建

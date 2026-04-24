@@ -66,6 +66,69 @@ application/
 3. 在 `library/services/<domain>_service.py` 中实现业务逻辑
 4. 如果涉及复杂逻辑，在 `library/domain/` 下创建领域层代码
 5. 如果需要数据持久化，在 `library/models/` 添加模型，在 `library/managers/` 添加管理器
+6. **在 `application/tests/` 下同步补充单元测试**（硬性要求，见下方"测试"章节）
+
+## 测试
+
+本项目使用 `pytest` 作为测试框架，所有代码改动必须同步补充或更新单元测试。
+
+### 目录结构
+
+```
+application/
+├── pytest.ini                      # pytest 配置（asyncio_mode=auto 等）
+└── tests/
+    ├── conftest.py                 # 公共夹具：内存 DB、TestClient、环境变量
+    ├── test_base_api_response.py   # ApiResponse
+    ├── test_base_exceptions.py     # 异常体系与全局处理器
+    ├── test_models.py              # ORM 模型默认值/级联
+    ├── test_conversation_manager.py # Manager 层 CRUD + 异常回滚
+    ├── test_llm_step.py            # Step 层：mock 与真实 httpx 分支
+    ├── test_domain_phrase_command.py # Phrase/Command 编排
+    ├── test_chat_service.py        # Service 层编排与错误路径
+    └── test_controllers.py         # Controller 层 FastAPI TestClient 集成
+```
+
+### 运行
+
+```bash
+cd application
+pytest                                   # 全部
+pytest tests/test_chat_service.py        # 单文件
+pytest -k test_chat_stream               # 按名称筛选
+pytest -x --tb=short                     # 遇首个失败即停，简短堆栈
+```
+
+### 公共夹具（定义在 `tests/conftest.py`）
+
+| 夹具 | 用途 |
+|------|------|
+| `db_engine` | 内存 SQLite 引擎（`StaticPool` 共享连接），自动建表/拆表 |
+| `db_session` | 基于 `db_engine` 的 `Session`，用于 Manager/Service 测试 |
+| `client` | `TestClient`，已通过 `dependency_overrides` 将 `get_db` 替换为内存 DB |
+
+夹具在模块导入前会把 `LLM_API_KEY` 置空、`DATABASE_URL` 指向内存库，避免污染真实 `chatbot.db`。
+
+### 各层测试约束
+
+| 层 | 测试要点 |
+|----|----------|
+| `base/` | 数据结构 + 异常体系的行为；用最小 FastAPI app 验证全局处理器 |
+| `models/` | 默认值、关系、级联删除 |
+| `managers/` | 正常路径 + `SQLAlchemyError` 回滚路径（用 `monkeypatch` 注入失败 commit） |
+| `domain/step/` | Mock 分支走真实代码；真实分支用 `httpx.MockTransport` 拦截 HTTP，覆盖超时/连接错误/5xx/JSON 异常 |
+| `domain/phrase/` & `command/` | 使用 `unittest.mock.AsyncMock` 隔离下层，单独验证本层组装逻辑 |
+| `services/` | 用 `AsyncMock` 替换 `chat_command.execute` / `execute_stream`，验证业务编排 + 错误半成品处理 |
+| `controller/` | `TestClient` 打通整条链路，LLM 走 Mock 分支 |
+
+### 硬性要求
+
+- 新增函数/类 → 补 `test_*.py`
+- 修 bug → 先写可复现的失败用例，再改代码，最后跑通
+- 新增接口 → 在 `tests/test_controllers.py` 中补用例
+- Manager 新增查询/写入 → 同时覆盖 `DatabaseException` 回滚路径
+- Service 新增逻辑 → 覆盖成功路径与 `NotFoundException` / `LLMException` 失败路径
+- 严禁为了让测试通过降低断言强度，也严禁在 CI 中 skip/xfail 掩盖问题
 
 ## 数据模型
 

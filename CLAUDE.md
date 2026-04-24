@@ -19,6 +19,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 新增接口需更新 API 列表，修改配置项需更新 `.env.example` 和相关文档，变更架构需更新规划文档和开发手册。不允许代码已改但文档未同步的情况。
 
+## Testing
+
+**硬性要求**：任何代码改动必须同步补充或更新单元测试。不允许"改了代码但没加/没更新测试"的提交。
+
+覆盖约束：
+- 新增函数/类 → 在 `application/tests/` 下补对应的 `test_*.py`
+- 修改已有实现（修 bug、改行为）→ 新增或更新用例覆盖新行为；修 bug 时先写可复现的失败用例再改代码
+- 新增 HTTP 接口 → 在 `tests/test_controllers.py` 中补 `TestClient` 用例
+- 领域层（`command/` `phrase/` `step/`）新增能力 → 增加或扩展对应用例，mock 掉下层依赖，单独验证本层职责
+- Manager 层新增查询/写入 → 增加用例，覆盖正常路径与 SQLAlchemy 异常回滚路径
+- Service 层新增逻辑 → 覆盖成功路径、`NotFoundException`、`LLMException` 等失败路径
+
+### 运行测试
+
+```bash
+cd application
+pytest                                   # 运行全部测试
+pytest tests/test_chat_service.py        # 运行单个文件
+pytest -k test_chat_stream               # 按名称筛选
+```
+
+### 编写规范
+
+- 测试文件命名 `test_*.py`、测试类 `Test*`、测试函数 `test_*`
+- 异步用例直接写 `async def`（`pytest.ini` 已配置 `asyncio_mode = auto`）
+- 数据库相关用例通过 `db_session` / `db_engine` 夹具获得内存 SQLite 会话，不使用真实的 `chatbot.db`
+- 接口相关用例通过 `client` 夹具获得已注入内存 DB 的 `TestClient`
+- LLM 调用默认走 Mock 分支（`LLM_API_KEY=""`）；需要验证真实请求路径时，用 `httpx.MockTransport` 拦截
+- 严禁为了让测试通过而降低断言（比如把 "assert X == 3" 改成 "assert X >= 0"）；也严禁在 CI 中 skip/xfail 掩盖真实问题
+
 ## Project Overview
 
 全栈对话式聊天机器人 Web 应用框架模板：Python/FastAPI 后端（`application/`）+ React/Vite 前端（`application-web/`）+ 文档（`docs/`）。
@@ -82,6 +112,7 @@ Controller → Service → Command → Phrase → Step
 cd application
 pip install -r requirements.txt
 python main.py                          # 启动 uvicorn，端口 :8000
+pytest                                  # 运行单元测试
 ```
 API 文档自动生成在 `http://localhost:8000/docs`。
 
