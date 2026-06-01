@@ -45,9 +45,12 @@ function App() {
 
   const handleConfirmNew = async (payload) => {
     setShowNewChatModal(false);
-    // preset：使用默认 system_prompt，创建后直接带着首条消息发起对话
-    // custom：把自定义 system_prompt 持久化到会话
-    const systemPrompt = payload.kind === "custom" ? payload.systemPrompt : "";
+    // preset：使用默认 system_prompt（八字大师），创建后带表单拼成的首条消息自动发起
+    // custom：使用通用助手 system_prompt，把用户输入作为首条消息自动发送
+    const systemPrompt =
+      payload.kind === "custom"
+        ? "You are a helpful assistant. 请用中文回答。"
+        : "";
     const res = await createConversation("New Conversation", systemPrompt);
     if (res.code !== 0) {
       setError(res.message);
@@ -55,6 +58,8 @@ function App() {
     }
     if (payload.kind === "preset") {
       setPendingFirstMessage({ text: payload.prompt, formData: payload.formData });
+    } else if (payload.kind === "custom") {
+      setPendingFirstMessage({ text: payload.prompt, formData: null });
     }
     setActiveId(res.data.id);
     loadConversations();

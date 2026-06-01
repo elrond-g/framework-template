@@ -84,14 +84,23 @@ function ChatWindow({ conversationId, onTitleUpdated, initialMessage, onInitialM
     setError(null);
     streamRef.current = { thinking: "", content: "" };
 
-    // 首次发送消息时，使用八字表单信息更新会话标题
-    if (formData && messages.length === 0) {
-      const { year, month, day, hour, minute, gender, directions } = formData;
-      const dirText = directions.join("、");
-      const title = `${year}年${month}月${day}日 ${hour}:${minute} ${gender} ${dirText}`;
-      const titleRes = await updateConversation(conversationId, title);
-      if (titleRes.code === 0 && onTitleUpdated) {
-        onTitleUpdated();
+    // 首次发送消息时自动更新会话标题：
+    // - 预置 Tab：使用八字摘要
+    // - 自定义 Tab：截取首条消息前 20 字
+    if (messages.length === 0) {
+      let title = null;
+      if (formData) {
+        const { year, month, day, hour, minute, gender, directions } = formData;
+        const dirText = directions.join("、");
+        title = `${year}年${month}月${day}日 ${hour}:${minute} ${gender} ${dirText}`;
+      } else if (text) {
+        title = text.length > 20 ? text.slice(0, 20) + "…" : text;
+      }
+      if (title) {
+        const titleRes = await updateConversation(conversationId, title);
+        if (titleRes.code === 0 && onTitleUpdated) {
+          onTitleUpdated();
+        }
       }
     }
 

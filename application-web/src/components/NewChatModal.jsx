@@ -75,12 +75,15 @@ export default function NewChatModal({ onConfirm, onCancel }) {
 
   const presetValid = isPresetValid(form);
 
+  const customPromptTrimmed = customPrompt.trim();
+
   const handleConfirm = () => {
     if (activeTab === TAB_PRESET) {
       if (!presetValid) return;
       onConfirm(buildPresetPayload(form));
     } else {
-      onConfirm({ kind: "custom", systemPrompt: customPrompt });
+      if (!customPromptTrimmed) return;
+      onConfirm({ kind: "custom", prompt: customPromptTrimmed });
     }
   };
 
@@ -172,7 +175,7 @@ export default function NewChatModal({ onConfirm, onCancel }) {
         ) : (
           <>
             <p className="modal-subtitle">
-              自定义系统提示词（可选，留空使用默认「八字大师」角色）
+              自由输入首条问题或请求，创建后立即作为用户消息发送
             </p>
             <textarea
               ref={textareaRef}
@@ -180,7 +183,7 @@ export default function NewChatModal({ onConfirm, onCancel }) {
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
               onKeyDown={handleCustomKeyDown}
-              placeholder="例如：你是一位资深旅游顾问，擅长日本关西地区的行程规划……"
+              placeholder="例如：帮我写一个 Python 快速排序，并解释每一步的复杂度。"
               rows={6}
             />
           </>
@@ -193,7 +196,10 @@ export default function NewChatModal({ onConfirm, onCancel }) {
           <button
             className="modal-btn modal-btn-primary"
             onClick={handleConfirm}
-            disabled={activeTab === TAB_PRESET && !presetValid}
+            disabled={
+              (activeTab === TAB_PRESET && !presetValid) ||
+              (activeTab === TAB_CUSTOM && !customPromptTrimmed)
+            }
           >
             创建
           </button>
